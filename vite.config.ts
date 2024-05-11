@@ -64,6 +64,15 @@ export default defineConfig(({ command }) => {
         renderer: {},
       }),
     ],
+    build: {
+      rollupOptions: {
+        input: {
+          main: path.resolve(__dirname, 'index.html'),
+          loading: path.resolve(__dirname, 'loading.html'),
+          spinner: path.resolve(__dirname, 'spinner.html'),
+        },
+      },
+    },
     server: process.env.VSCODE_DEBUG && (() => {
       const url = new URL(pkg.debug.env.VITE_DEV_SERVER_URL)
       return {
