@@ -83,6 +83,9 @@ const TableComponent: React.FC = () => {
         title: "获取推流码错误",
         description: JSON.stringify(error),
       });
+      if (JSON.stringify(error).includes("重新登录")) {
+        window.ipcRenderer.send("open-douyin-window");
+      }
     } finally {
       setFetchLoading(false);
     }
@@ -219,6 +222,7 @@ const TableComponent: React.FC = () => {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>ID</TableHead>
             <TableHead>抖音昵称</TableHead>
             <TableHead>地区</TableHead>
             <TableHead>推流地址</TableHead>
@@ -234,6 +238,7 @@ const TableComponent: React.FC = () => {
             const rtmp2 = item?.rtmp_push_url?.split("/stage/")[1];
             return (
               <TableRow key={item.id}>
+                <TableCell>{index + 1}</TableCell>
                 <TableCell>{item.nickname}</TableCell>
                 <TableCell>{item.location}</TableCell>
                 <TableCell>
@@ -291,7 +296,15 @@ const TableComponent: React.FC = () => {
                       </Button>
                     )}
                     {item.nickname && !item.rtmp_push_url ? (
-                      <Dialog open={open} onOpenChange={setOpen}>
+                      <Dialog
+                        open={open}
+                        onOpenChange={(open) => {
+                          setSelectedItem(item);
+                          selected = item;
+                          setOpen(open);
+                          console.log(item);
+                        }}
+                      >
                         <DialogTrigger asChild>
                           <Button variant="outline">获取推流码</Button>
                         </DialogTrigger>
@@ -299,9 +312,12 @@ const TableComponent: React.FC = () => {
                           <DialogHeader>
                             <DialogTitle>获取推流码</DialogTitle>
                             <DialogDescription className="mt-4">
-                              请填入您的设备ID（打开抖音APP - 设置 -
-                              滑动到最低部连续点击抖音 version字样 -
-                              复制DID即为设备ID）
+                              请填入您的设备ID
+                              <div>
+                                （打开抖音APP - 设置 - 滑动到最底部连续点击抖音
+                                version字样 -
+                                复制DeviceId（安卓）或DID（IOS）即为设备ID）
+                              </div>
                             </DialogDescription>
                           </DialogHeader>
                           <div className="grid gap-4 py-4">
@@ -388,6 +404,13 @@ const TableComponent: React.FC = () => {
           })}
         </TableBody>
       </Table>
+      <div className="flex justify-center mt-28 text-gray-500">
+        {tunnelList.length ? (
+          <div>抖音通道不够？联系管理员可开通更多通道哦～ </div>
+        ) : (
+          <div>您还没有开通抖音通道，请联系管理员开启～ </div>
+        )}
+      </div>
       <div className="flex justify-center mt-20">
         {tableLoading && <Loader2 className="h-20 w-20 animate-spin" />}
       </div>

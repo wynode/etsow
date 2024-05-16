@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Divide, Loader2 } from "lucide-react";
 
 import { useToast } from "@/components/ui/use-toast";
 import {
@@ -116,20 +116,13 @@ const TableComponent: React.FC = () => {
         fetchList();
         // 处理下播的结果
       } catch (error: any) {
-        if (error?.msg?.includes("账号登录信息过期")) {
-          toast({
-            variant: "destructive",
-            title: "下播出错",
-            description: `${error.msg}。然后再进行下播操作`,
-          });
-
+        toast({
+          variant: "destructive",
+          title: "下播出错",
+          description: JSON.stringify(error),
+        });
+        if (JSON.stringify(error).includes("重新登录")) {
           window.ipcRenderer.send("open-login-window");
-        } else {
-          toast({
-            variant: "destructive",
-            title: "下播出错",
-            description: error.message,
-          });
         }
       } finally {
         setFetchLoading(false);
@@ -147,7 +140,7 @@ const TableComponent: React.FC = () => {
       toast({
         variant: "destructive",
         title: "获取出错",
-        description: error.msg || "版本号不匹配，请在官网下载新版",
+        description: JSON.stringify(error),
       });
     } finally {
       setTableLoading(false);
@@ -220,7 +213,7 @@ const TableComponent: React.FC = () => {
         toast({
           variant: "destructive",
           title: "获取出错",
-          description: error?.non_field_errors || error.message || "请重试",
+          description: error?.non_field_errors || error.message || JSON.stringify(error),
         });
       } finally {
         setIsFetch(false);
@@ -242,7 +235,7 @@ const TableComponent: React.FC = () => {
       <Table>
         <TableHeader>
           <TableRow>
-            {/* <TableHead>ID</TableHead> */}
+            <TableHead>ID</TableHead>
             <TableHead>TikTok昵称</TableHead>
             <TableHead>地区</TableHead>
             <TableHead>推流地址</TableHead>
@@ -260,6 +253,7 @@ const TableComponent: React.FC = () => {
             const rtmp2 = item?.rtmp_push_url?.split("/stage/")[1];
             return (
               <TableRow key={item.id}>
+                <TableCell>{index + 1}</TableCell>
                 <TableCell>{item.nickname}</TableCell>
                 <TableCell>{item.location}</TableCell>
                 <TableCell>
@@ -318,7 +312,15 @@ const TableComponent: React.FC = () => {
                       </Button>
                     )}
                     {item.nickname && !item.rtmp_push_url ? (
-                      <Dialog open={open} onOpenChange={setOpen}>
+                      <Dialog
+                        open={open}
+                        onOpenChange={(open) => {
+                          setSelectedItem(item);
+                          selected = item;
+                          setOpen(open);
+                          console.log(item);
+                        }}
+                      >
                         <DialogTrigger asChild>
                           <Button variant="outline">获取推流码</Button>
                         </DialogTrigger>
@@ -424,6 +426,13 @@ const TableComponent: React.FC = () => {
           })}
         </TableBody>
       </Table>
+      <div className="flex justify-center mt-28 text-gray-500">
+        {tunnelList.length ? (
+          <div>TikTok通道不够？联系管理员可开通更多通道哦～ </div>
+        ) : (
+          <div>您还没有开通TikTok通道，请联系管理员开启～ </div>
+        )}
+      </div>
       <div className="flex justify-center mt-20">
         {tableLoading && <Loader2 className="h-20 w-20 animate-spin" />}
       </div>

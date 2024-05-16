@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
 import Tiktok from "@/components/Tiktok";
 import Douyin from "@/components/Douyin";
+import Tools from "@/components/Tools";
 import Logo from "@/assets/logo.png";
 import Banner from "@/assets/banner.jpg";
+import Banner2 from "@/assets/banner2.png";
 import FuFei from "@/assets/fufei.jpg";
 import MianFei from "@/assets/mianfei.jpg";
 import LoginRegister from "@/components/Login";
 import { Button } from "@/components/ui/button";
+import Autoplay from "embla-carousel-autoplay";
 import { Toaster } from "@/components/ui/toaster";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -16,7 +19,15 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,6 +43,14 @@ import {
 const LoginPage: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("");
+  const plugin = React.useRef(
+    Autoplay({
+      delay: 4000,
+      stopOnFocusIn: false,
+      stopOnInteraction: false,
+      stopOnMouseEnter: false,
+    })
+  );
 
   useEffect(() => {
     setUserName(localStorage.getItem("userName") || "");
@@ -68,6 +87,9 @@ const LoginPage: React.FC = () => {
       "https://console-api.etsow.com/live_tools/static/定制版_OBS.zip"
     );
   };
+  const handelBanner2Click = () => {
+    window.open("https://work.weixin.qq.com/ca/cawcde945a90447f0f");
+  };
 
   return (
     <div className="mt-2">
@@ -85,14 +107,37 @@ const LoginPage: React.FC = () => {
               {/* <Logo></Logo> */}
               <img className="w-20" src={Logo} alt="" />
               <div>
-                <img
-                  className="w-[1000px] cursor-pointer"
-                  onClick={() => {
-                    handelBannerClick();
-                  }}
-                  src={Banner}
-                  alt=""
-                />
+                <Carousel
+                  plugins={[plugin.current]}
+                  className="w-[1000px] relative"
+                  onMouseEnter={plugin.current.stop}
+                  onMouseLeave={plugin.current.reset}
+                >
+                  <CarouselContent>
+                    <CarouselItem>
+                      <img
+                        className="w-[1000px] cursor-pointer"
+                        onClick={() => {
+                          handelBannerClick();
+                        }}
+                        src={Banner}
+                        alt=""
+                      />
+                    </CarouselItem>
+                    <CarouselItem>
+                      <img
+                        className="w-[1000px] cursor-pointer"
+                        onClick={() => {
+                          handelBanner2Click();
+                        }}
+                        src={Banner2}
+                        alt=""
+                      />
+                    </CarouselItem>
+                  </CarouselContent>
+                  <CarouselPrevious  className="w-2 h-2 absolute left-[490px] top-[78px]" />
+                  <CarouselNext className="w-2 h-2 absolute left-[506px] top-[78px]" />
+                </Carousel>
               </div>
               <NavigationMenu>
                 <NavigationMenuList>
@@ -119,6 +164,7 @@ const LoginPage: React.FC = () => {
                 <TabsTrigger value="info">免责声明</TabsTrigger>
                 <TabsTrigger value="douyin">抖音推流</TabsTrigger>
                 <TabsTrigger value="tiktok">Tiktok推流</TabsTrigger>
+                <TabsTrigger value="tools">伙伴专区</TabsTrigger>
                 <TabsTrigger value="contact">联系我们</TabsTrigger>
               </TabsList>
               <TabsContent value="info">
@@ -158,6 +204,9 @@ const LoginPage: React.FC = () => {
               </TabsContent>
               <TabsContent value="tiktok">
                 <Tiktok></Tiktok>
+              </TabsContent>
+              <TabsContent value="tools">
+                <Tools></Tools>
               </TabsContent>
               <TabsContent value="contact">
                 <div className="flex mt-24 justify-center h-full">
@@ -230,6 +279,13 @@ const LoginPage: React.FC = () => {
                         <p>1、完成用户注册</p>
                         <p>2、完成抖音获取推流码</p>
                         <p>3、完成回填进入tiktok小店</p>
+                        <p>4、完成banner设置</p>
+                      </div>
+                      <p className="mt-4">版本号 1.0.3 : </p>
+                      <div className="ml-4">
+                        <p>1、优化登录逻辑</p>
+                        <p>2、增加未充值等各类提示</p>
+                        <p>3、新增伙伴专区</p>
                       </div>
                     </div>
                   </AlertDialogDescription>

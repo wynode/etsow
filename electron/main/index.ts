@@ -64,7 +64,7 @@ async function createWindow() {
     height: 800,
     resizable: false,
     autoHideMenuBar: true,
-    title: "Newbee - 代理端",
+    title: "探行- V1.0.3",
     icon: path.join(process.env.VITE_PUBLIC, "favicon.ico"),
     webPreferences: {
       preload,
