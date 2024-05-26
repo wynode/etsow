@@ -8,6 +8,7 @@ declare global {
         removeAllListeners: (channel: string) => void;
       };
     };
+    echarts: any;
   }
 
   interface TableItem {
@@ -36,8 +37,15 @@ declare global {
     onLoginOut: () => void;
   }
 
+  // 文件：typings.d.ts
+  declare module "*";
+
   interface LoginRegisterProps {
     onLoginSuccess: (username: string) => void;
+  }
+  interface ContainerProps {
+    onLoginOut: () => void;
+    userName: string;
   }
 
   interface LoginParams {

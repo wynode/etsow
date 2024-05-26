@@ -1,0 +1,2 @@
+scp ./release/1.1.0/etsow-V1.1.0-windows.zip ubuntu@113.125.83.227:/home/ubuntu/etsow/backend/uploads/live_tools/
+scp ./release/1.1.0/etsow-V1.1.0-mac.dmg ubuntu@113.125.83.227:/home/ubuntu/etsow/backend/uploads/live_tools/

@@ -1,5 +1,5 @@
 const BASE_URL = "http://livetool.etsow.com"; // 替换为你的实际 API 域名
-// const BASE_URL = "http://154.22.111.74:8501"; // 替换为你的实际 API 域名
+// const BASE_URL = "http://154.22.111.74:8502"; // 替换为你的实际 API 域名
 
 async function request(path: string, options: RequestInit = {}) {
   const token = localStorage.getItem("token"); // 从本地存储中获取 token
@@ -73,7 +73,7 @@ export async function postCookies(
 }
 
 export async function getTunnelList() {
-  return request("/tunnel/?vs=1.0.2", {
+  return request("/tunnel/?vs=qd-1.1.0", {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -101,7 +101,7 @@ export async function offlineUser(id: number) {
 }
 
 export async function getDouyinTunnelList() {
-  return request("/tunnel/get_douyin_tunnel/?vs=1.0.2", {
+  return request("/tunnel/get_douyin_tunnel/?vs=qd-1.1.0", {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

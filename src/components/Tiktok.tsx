@@ -70,7 +70,7 @@ const TableComponent: React.FC = () => {
     selected = item;
     setTimeout(() => {
       window.ipcRenderer.send("open-login-window");
-    }, 1000);
+    }, 100);
   };
 
   const handlePostTunnel = () => {
@@ -82,13 +82,13 @@ const TableComponent: React.FC = () => {
     setSelectedItem(item);
   };
 
-  const handleGetStreamCode = async (item: TableItem) => {
+  const handleGetStreamCode = async () => {
     try {
       setFetchLoading(true);
-      await LoginTunnel(item.id || 1, {
+      await LoginTunnel(selectedItem?.id || selected?.id || 1, {
         location: location,
       });
-      const data = await getStreamCode(item.id);
+      const data = await getStreamCode(selectedItem?.id || selected?.id || 1);
       setTuiliuma(data.rtmp_push_url);
       setOpen(false);
       fetchList();
@@ -114,11 +114,11 @@ const TableComponent: React.FC = () => {
         setFetchLoading(true);
         await offlineUser(selectedItem?.id || selected?.id || 1);
         fetchList();
-        // 处理下播的结果
+        // 处理释放通道的结果
       } catch (error: any) {
         toast({
           variant: "destructive",
-          title: "下播出错",
+          title: "释放通道出错",
           description: JSON.stringify(error),
         });
         if (JSON.stringify(error).includes("重新登录")) {
@@ -137,6 +137,10 @@ const TableComponent: React.FC = () => {
       const res = await getTunnelList();
       setTunnelList(res.results);
     } catch (error: any) {
+      const errorMsg = JSON.stringify(error);
+      if (errorMsg.includes("请下载最新的版本")) {
+        window.open("https://console.etsow.com/live_tools/zx_download");
+      }
       toast({
         variant: "destructive",
         title: "获取出错",
@@ -213,7 +217,8 @@ const TableComponent: React.FC = () => {
         toast({
           variant: "destructive",
           title: "获取出错",
-          description: error?.non_field_errors || error.message || JSON.stringify(error),
+          description:
+            error?.non_field_errors || error.message || JSON.stringify(error),
         });
       } finally {
         setIsFetch(false);
@@ -298,7 +303,7 @@ const TableComponent: React.FC = () => {
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-4 items-center">
-                    {item.nickname ? (
+                    {item.rtmp_push_url ? (
                       ""
                     ) : (
                       <Button
@@ -308,7 +313,7 @@ const TableComponent: React.FC = () => {
                         {fetchLoading && (
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         )}
-                        登录TikTok
+                        {item.nickname ? "重新登录" : "登录TikTok"}
                       </Button>
                     )}
                     {item.nickname && !item.rtmp_push_url ? (
@@ -317,6 +322,7 @@ const TableComponent: React.FC = () => {
                         onOpenChange={(open) => {
                           setSelectedItem(item);
                           selected = item;
+                          console.log(item);
                           setOpen(open);
                           console.log(item);
                         }}
@@ -360,7 +366,7 @@ const TableComponent: React.FC = () => {
                             <Button
                               type="submit"
                               disabled={fetchLoading}
-                              onClick={() => handleGetStreamCode(item)}
+                              onClick={() => handleGetStreamCode()}
                             >
                               {fetchLoading && (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -384,7 +390,7 @@ const TableComponent: React.FC = () => {
                             {fetchLoading && (
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             )}
-                            下播
+                            释放通道
                           </Button>
                         ) : (
                           ""
@@ -392,9 +398,9 @@ const TableComponent: React.FC = () => {
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>确认下播</AlertDialogTitle>
+                          <AlertDialogTitle>确认释放通道</AlertDialogTitle>
                           <AlertDialogDescription>
-                            确定要下播{item.nickname}吗?
+                            确定要释放通道{item.nickname}吗?
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>

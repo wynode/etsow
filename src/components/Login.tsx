@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { login, register, postVerifyCode } from "@/api";
 import { Loader2 } from "lucide-react";
+import LoginBg from "@/assets/login_video.mp4";
 
 const LoginRegister: React.FC<LoginRegisterProps> = ({ onLoginSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -83,92 +84,115 @@ const LoginRegister: React.FC<LoginRegisterProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="w-80 mx-auto">
-      <h2 className="text-2xl font-bold mb-4">{isLogin ? "登录" : "注册"}</h2>
-      <form onSubmit={handleSubmit}>
-        {!isLogin && (
-          <div className="mb-4">
-            <Input
-              type="phone"
-              placeholder="手机号"
-              onChange={(e) => {
-                setPhone(e.target.value);
-              }}
-            />
-            <div className="flex w-full max-w-sm items-center space-x-2 mt-4">
+    <div className="h-screen flex justify-start items-center">
+      <video
+        src={LoginBg}
+        autoPlay
+        controls={false}
+        loop={true}
+        className="h-screen"
+      ></video>
+      <div className="max-h-96 z-10 flex-grow">
+        <div className="w-64 mx-auto">
+          <h2 className="text-2xl font-bold mb-4">
+            {isLogin ? "登录" : "注册"}
+          </h2>
+          <form onSubmit={handleSubmit}>
+            {!isLogin && (
+              <div className="mb-4">
+                <Input
+                  className=""
+                  type="phone"
+                  placeholder="手机号"
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                  }}
+                />
+                <div className="flex w-full max-w-sm items-center space-x-2 mt-4">
+                  <Input
+                    placeholder="验证码"
+                    value={verifyCode}
+                    onChange={(e) => setVerifyCode(e.target.value)}
+                    required
+                  />
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleSendVerifyCode();
+                    }}
+                    disabled={postLoading}
+                  >
+                    {postLoading && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    {countdown === 0 ? "发送验证码" : `等待${countdown}s`}
+                  </Button>
+                </div>
+              </div>
+            )}
+            {isLogin && (
+              <div className="mb-4">
+                <Input
+                  className=""
+                  placeholder="用户名/手机号"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                />
+              </div>
+            )}
+            <div className="mb-4">
               <Input
-                placeholder="验证码"
-                value={verifyCode}
-                onChange={(e) => setVerifyCode(e.target.value)}
+                className=""
+                type="password"
+                placeholder="密码"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
               />
+            </div>
+            {!isLogin && (
+              <div className="mb-4">
+                <Input
+                  type="password"
+                  placeholder="确认密码"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </div>
+            )}
+            <Button
+              // variant="outline"
+              type="submit"
+              className="w-full mb-4"
+              disabled={submitLoading}
+            >
+              {submitLoading && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              {isLogin ? "登录" : "注册"}
+            </Button>
+            <div className="text-red-500 text-sm text-center">{loginError}</div>
+          </form>
+          <div className="text-center">
+            <div className="text-center">
               <Button
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleSendVerifyCode();
+                variant="link"
+                onClick={() => {
+                  setPassword("");
+                  setConfirmPassword("");
+                  setPhone("");
+                  setVerifyCode("");
+                  setUsername("");
+                  setLoginError("");
+                  setIsLogin(!isLogin);
                 }}
-                disabled={postLoading}
               >
-                {postLoading && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                {countdown === 0 ? "发送验证码" : `等待${countdown}s`}
+                {isLogin ? "去注册" : "去登录"}
               </Button>
             </div>
           </div>
-        )}
-        {isLogin && (
-          <div className="mb-4">
-            <Input
-              placeholder="用户名/手机号"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-          </div>
-        )}
-        <div className="mb-4">
-          <Input
-            type="password"
-            placeholder="密码"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        {!isLogin && (
-          <div className="mb-4">
-            <Input
-              type="password"
-              placeholder="确认密码"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-            />
-          </div>
-        )}
-        <Button type="submit" className="w-full mb-4" disabled={submitLoading}>
-          {submitLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {isLogin ? "登录" : "注册"}
-        </Button>
-        <div className="text-red-500 text-sm text-center">{loginError}</div>
-      </form>
-      <div className="text-center">
-        <div className="text-center">
-          <Button
-            variant="link"
-            onClick={() => {
-              setPassword("");
-              setConfirmPassword("");
-              setPhone("");
-              setVerifyCode("");
-              setUsername("");
-              setLoginError("");
-              setIsLogin(!isLogin);
-            }}
-          >
-            {isLogin ? "去注册" : "去登录"}
-          </Button>
         </div>
       </div>
     </div>

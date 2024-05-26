@@ -68,10 +68,13 @@ const TableComponent: React.FC = () => {
     setSelectedItem(item);
   };
 
-  const handleGetDouyinStreamCode = async (item: TableItem) => {
+  const handleGetDouyinStreamCode = async () => {
     try {
       setFetchLoading(true);
-      const data = await getDouyinStreamCode(item.id, { device_id: deviceId });
+      const data = await getDouyinStreamCode(
+        selectedItem?.id || selected?.id || 1,
+        { device_id: deviceId }
+      );
       console.log("获取推流码结果:", data);
       setTuiliuma(data.rtmp_push_url);
       setOpen(false);
@@ -98,20 +101,20 @@ const TableComponent: React.FC = () => {
         setFetchLoading(true);
         await offlineDouyin(selectedItem?.id || selected?.id || 1);
         fetchList();
-        // 处理下播的结果
+        // 处理释放通道的结果
       } catch (error: any) {
         if (error?.msg?.includes("账号登录信息过期")) {
           toast({
             variant: "destructive",
-            title: "下播出错",
-            description: `${error.msg}。然后再进行下播操作`,
+            title: "释放通道出错",
+            description: `${error.msg}。然后再进行释放通道操作`,
           });
 
           window.ipcRenderer.send("open-douyin-window");
         } else {
           toast({
             variant: "destructive",
-            title: "下播出错",
+            title: "释放通道出错",
             description: error.message,
           });
         }
@@ -282,7 +285,7 @@ const TableComponent: React.FC = () => {
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-4 items-center">
-                    {item.nickname ? (
+                    {item.rtmp_push_url ? (
                       ""
                     ) : (
                       <Button
@@ -292,7 +295,7 @@ const TableComponent: React.FC = () => {
                         {fetchLoading && (
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         )}
-                        登录抖音
+                        {item.nickname ? "重新登录" : "登录抖音"}
                       </Button>
                     )}
                     {item.nickname && !item.rtmp_push_url ? (
@@ -338,7 +341,7 @@ const TableComponent: React.FC = () => {
                             <Button
                               type="submit"
                               disabled={fetchLoading}
-                              onClick={() => handleGetDouyinStreamCode(item)}
+                              onClick={() => handleGetDouyinStreamCode()}
                             >
                               {fetchLoading && (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -362,7 +365,7 @@ const TableComponent: React.FC = () => {
                             {fetchLoading && (
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             )}
-                            下播
+                            释放通道
                           </Button>
                         ) : (
                           ""
@@ -370,9 +373,9 @@ const TableComponent: React.FC = () => {
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>确认下播</AlertDialogTitle>
+                          <AlertDialogTitle>确认释放通道</AlertDialogTitle>
                           <AlertDialogDescription>
-                            确定要下播{item.nickname}吗?
+                            确定要释放通道{item.nickname}吗?
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -384,7 +387,7 @@ const TableComponent: React.FC = () => {
                       </AlertDialogContent>
                     </AlertDialog>
 
-                    {item.all_cookies ? (
+                    {/* {item.all_cookies ? (
                       <Button
                         onClick={() => handleOpenShop(item)}
                         disabled={fetchLoading}
@@ -396,7 +399,7 @@ const TableComponent: React.FC = () => {
                       </Button>
                     ) : (
                       ""
-                    )}
+                    )} */}
                   </div>
                 </TableCell>
               </TableRow>

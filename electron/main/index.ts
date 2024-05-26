@@ -64,7 +64,7 @@ async function createWindow() {
     height: 800,
     resizable: false,
     autoHideMenuBar: true,
-    title: "探行- V1.0.3",
+    title: "探行- V1.1.0",
     icon: path.join(process.env.VITE_PUBLIC, "favicon.ico"),
     webPreferences: {
       preload,
@@ -78,7 +78,6 @@ async function createWindow() {
       // contextIsolation: false,
     },
   });
-
   if (VITE_DEV_SERVER_URL) {
     // #298
     win.loadURL(VITE_DEV_SERVER_URL);
@@ -201,39 +200,39 @@ async function createLoginWindow() {
 
   loginWindow.on("close", async (event) => {
     if (!canOpenTiktok && loginWindow) {
-      const options = {
-        // type: 'info',
+      const options1: any = {
         title: "确认操作",
-        message: "网站未加载完成，将不能获取到推流码，是否退出?",
+        message: "网站未加载完成，将不能获取到推流码，是否退出？",
         buttons: ["确定", "取消"],
         defaultId: 0,
         cancelId: 1,
+        type: "question",
       };
-
-      const response = await dialog.showMessageBox(options);
-
-      if (response.response === 0) {
-        // 用户点击了确定按钮
+      const response = dialog.showMessageBoxSync(loginWindow, options1);
+      if (response === 1) {
+        // 如果用户点击“取消”
+        event.preventDefault(); // 阻止窗口关闭
+      } else {
         console.log("用户点击了确定按钮");
         return;
-        // 执行确定操作的代码
-      } else {
-        // 用户点击了取消按钮或关闭了对话框
-        console.log("用户点击了取消按钮或关闭了对话框");
-        event.preventDefault();
-        return;
-        // 执行取消操作的代码
       }
     }
-    if (isClosing) {
-      const options = {
+    if (isClosing && loginWindow) {
+      const options2 = {
         title: "确认操作",
         message: "关闭窗口动作会涉及读取信息，读取完成会自动关闭，请耐心等待",
         buttons: ["确定", "取消"],
         defaultId: 0,
         cancelId: 1,
       };
-      await dialog.showMessageBox(options);
+
+      const response = dialog.showMessageBoxSync(loginWindow, options2);
+      if (response === 1) {
+        // 如果用户点击“取消”
+        event.preventDefault(); // 阻止窗口关闭
+      } else {
+        event.preventDefault(); // 阻止窗口关闭
+      }
     }
     event.preventDefault(); // 阻止窗口关闭
 
@@ -450,6 +449,13 @@ async function createRestoreTiktokWindow(item: any) {
 ipcMain.on("open-login-window", () => {
   createLoginWindow();
 });
+
+ipcMain.on(
+  "change-window-size",
+  (_event, size: { width: number; height: number }) => {
+    win?.setSize(size.width, size.height);
+  }
+);
 
 ipcMain.on("open-douyin-window", () => {
   createDouyinWindow();
