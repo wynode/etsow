@@ -2,42 +2,39 @@
  * @see https://www.electron.build/configuration/configuration
  */
 {
-  "appId": "com.wynode.app",
-  "asar": true,
-  "directories": {
-    "output": "release/${version}"
+  appId: "com.wynode.app",
+  asar: true,
+  directories: {
+    output: "release/${version}",
   },
-  "files": [
-    "dist-electron",
-    "dist"
-  ],
-  "mac": {
-    "artifactName": "${productName}_${version}.${ext}",
-    "target": [
-      "dmg",
-      "zip"
-    ]
-  },
-  "win": {
-    "target": [
+  files: ["dist-electron", "dist"],
+  mac: {
+    target: [
       {
-        "target": "nsis",
-        "arch": [
-          "x64"
-        ]
-      }
+        target: "dmg",
+        arch: ["arm64", "x64"],
+      },
     ],
-    "artifactName": "${productName}_${version}.${ext}"
   },
-  "nsis": {
-    "oneClick": false,
-    "perMachine": false,
-    "allowToChangeInstallationDirectory": true,
-    "deleteAppDataOnUninstall": false
+  win: {
+    target: [
+      {
+        target: "zip",
+        arch: ["x64"],
+      },
+    ],
+    // "target": "zip",
+    // artifactName: "${productName}_${version}.${ext}",
   },
-  "publish": {
-    "provider": "generic",
-    "channel": "latest",
-    "url": "https://github.com/electron-vite/electron-vite-react/releases/download/v0.9.9/"
-  }
+  nsis: {
+    oneClick: false,
+    perMachine: false,
+    allowToChangeInstallationDirectory: true,
+    deleteAppDataOnUninstall: false,
+  },
+  publish: {
+    provider: "generic",
+    channel: "latest",
+    url: "https://github.com/electron-vite/electron-vite-react/releases/download/v0.9.9/",
+  },
 }

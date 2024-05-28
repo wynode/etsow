@@ -27,6 +27,8 @@ declare global {
     live_status_cn: string;
     start_time: string;
     all_cookies: string;
+    remain_valid_days: string;
+    location_type_cn: string;
   }
 
   interface TableComponentProps {

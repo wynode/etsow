@@ -1,5 +1,5 @@
-const BASE_URL = "http://livetool.etsow.com"; // 替换为你的实际 API 域名
-// const BASE_URL = "http://154.22.111.74:8502"; // 替换为你的实际 API 域名
+// const BASE_URL = "http://livetool.etsow.com"; // 替换为你的实际 API 域名
+const BASE_URL = "http://154.22.111.74:8502"; // 替换为你的实际 API 域名
 
 async function request(path: string, options: RequestInit = {}) {
   const token = localStorage.getItem("token"); // 从本地存储中获取 token

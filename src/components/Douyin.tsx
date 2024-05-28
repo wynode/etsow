@@ -39,6 +39,7 @@ import {
   LoginDouyinTunnel,
   getDouyinTunnelList,
 } from "@/api";
+import { copyToClipboard } from "@/lib/utils";
 
 let selected: TableItem | null = null;
 
@@ -145,46 +146,6 @@ const TableComponent: React.FC = () => {
     window.ipcRenderer.send("restore-douyin-window", item);
   };
 
-  const copyToClipboard = async (val: string) => {
-    if (typeof val !== "string") {
-      console.error("Invalid input: Input must be a string.");
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(val);
-      toast({
-        title: "复制成功",
-      });
-    } catch (error) {
-      try {
-        const textArea = document.createElement("textarea");
-        textArea.value = val;
-        Object.assign(textArea.style, {
-          width: "0px",
-          position: "fixed",
-          left: "-9999px",
-          top: "10px",
-          opacity: "0",
-          pointerEvents: "none",
-          readonly: "readonly",
-        });
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textArea);
-        toast({
-          title: "复制成功",
-        });
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "复制失败",
-        });
-      }
-    }
-  };
-
   useEffect(() => {
     window.ipcRenderer.on("douyin-cookie-post", async (event, douyinInfo) => {
       try {
@@ -227,9 +188,9 @@ const TableComponent: React.FC = () => {
           <TableRow>
             <TableHead>ID</TableHead>
             <TableHead>抖音昵称</TableHead>
-            <TableHead>地区</TableHead>
+            {/* <TableHead>地区</TableHead> */}
             <TableHead>推流地址</TableHead>
-            <TableHead>直播状态</TableHead>
+            {/* <TableHead>直播状态</TableHead> */}
             <TableHead>登录时间</TableHead>
             <TableHead>通道期限</TableHead>
             <TableHead>操作</TableHead>
@@ -243,7 +204,7 @@ const TableComponent: React.FC = () => {
               <TableRow key={item.id}>
                 <TableCell>{index + 1}</TableCell>
                 <TableCell>{item.nickname}</TableCell>
-                <TableCell>{item.location}</TableCell>
+                {/* <TableCell>{item.location}</TableCell> */}
                 <TableCell>
                   <div className="space-y-4 w-[480px]">
                     <p>
@@ -252,7 +213,7 @@ const TableComponent: React.FC = () => {
                         <Button
                           size="sm"
                           className="ml-4"
-                          onClick={() => copyToClipboard(rtmp1)}
+                          onClick={() => copyToClipboard(rtmp1, toast)}
                         >
                           复制
                         </Button>
@@ -265,7 +226,7 @@ const TableComponent: React.FC = () => {
                         <Button
                           size="sm"
                           className="ml-4"
-                          onClick={() => copyToClipboard(rtmp2)}
+                          onClick={() => copyToClipboard(rtmp2, toast)}
                         >
                           复制
                         </Button>
@@ -273,14 +234,24 @@ const TableComponent: React.FC = () => {
                     </p>
                   </div>
                 </TableCell>
-                <TableCell>{item.live_status_cn}</TableCell>
+                {/* <TableCell>{item.live_status_cn}</TableCell> */}
                 <TableCell>{item.created_at}</TableCell>
                 <TableCell>
-                  <div className="w-[100px]">
+                  {/* <div className="w-[100px]">
                     <div>{item.start_time?.slice(0, 10)}</div>
 
                     {item.expire_time && <div className="ml-8">-</div>}
                     <div>{item.expire_time?.slice(0, 10)}</div>
+                  </div> */}
+                  <div>
+                    {item.expire_time
+                      ? Math.ceil(
+                          (new Date(item.expire_time).getTime() -
+                            new Date().getTime()) /
+                            (1000 * 60 * 60 * 24)
+                        )
+                      : 0}
+                    天
                   </div>
                 </TableCell>
                 <TableCell>

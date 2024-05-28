@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Divide, Loader2 } from "lucide-react";
-
+import { downloadUrl } from "@/config";
 import { useToast } from "@/components/ui/use-toast";
 import {
   Table,
@@ -50,15 +50,15 @@ import {
   getTunnelList,
 } from "@/api";
 
+import { copyToClipboard } from "@/lib/utils"; // 导入工具函数
+
 let selected: TableItem | null = null;
 
 const TableComponent: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState<TableItem | null>(null);
   const [fetchLoading, setFetchLoading] = useState(false);
   const [tableLoading, setTableLoading] = useState(false);
-
   const [isFetch, setIsFetch] = useState(false);
-  const [tuiliuma, setTuiliuma] = useState("");
   const [open, setOpen] = useState(false);
   const [location, setLocation] = useState("us");
   const { toast } = useToast();
@@ -89,7 +89,6 @@ const TableComponent: React.FC = () => {
         location: location,
       });
       const data = await getStreamCode(selectedItem?.id || selected?.id || 1);
-      setTuiliuma(data.rtmp_push_url);
       setOpen(false);
       fetchList();
       // 处理获取推流码的结果
@@ -139,7 +138,7 @@ const TableComponent: React.FC = () => {
     } catch (error: any) {
       const errorMsg = JSON.stringify(error);
       if (errorMsg.includes("请下载最新的版本")) {
-        window.open("https://console.etsow.com/live_tools/zx_download");
+        window.open(downloadUrl);
       }
       toast({
         variant: "destructive",
@@ -148,46 +147,6 @@ const TableComponent: React.FC = () => {
       });
     } finally {
       setTableLoading(false);
-    }
-  };
-
-  const copyToClipboard = async (val: string) => {
-    if (typeof val !== "string") {
-      console.error("Invalid input: Input must be a string.");
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(val);
-      toast({
-        title: "复制成功",
-      });
-    } catch (error) {
-      try {
-        const textArea = document.createElement("textarea");
-        textArea.value = val;
-        Object.assign(textArea.style, {
-          width: "0px",
-          position: "fixed",
-          left: "-9999px",
-          top: "10px",
-          opacity: "0",
-          pointerEvents: "none",
-          readonly: "readonly",
-        });
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textArea);
-        toast({
-          title: "复制成功",
-        });
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "复制失败",
-        });
-      }
     }
   };
 
@@ -244,7 +203,7 @@ const TableComponent: React.FC = () => {
             <TableHead>TikTok昵称</TableHead>
             <TableHead>地区</TableHead>
             <TableHead>推流地址</TableHead>
-            <TableHead>直播状态</TableHead>
+            <TableHead>版本</TableHead>
             <TableHead>登录时间</TableHead>
 
             {/* <TableHead>通道状态</TableHead> */}
@@ -269,7 +228,7 @@ const TableComponent: React.FC = () => {
                         <Button
                           size="sm"
                           className="ml-4"
-                          onClick={() => copyToClipboard(rtmp1)}
+                          onClick={() => copyToClipboard(rtmp1, toast)}
                         >
                           复制
                         </Button>
@@ -282,7 +241,7 @@ const TableComponent: React.FC = () => {
                         <Button
                           size="sm"
                           className="ml-4"
-                          onClick={() => copyToClipboard(rtmp2)}
+                          onClick={() => copyToClipboard(rtmp2, toast)}
                         >
                           复制
                         </Button>
@@ -290,16 +249,17 @@ const TableComponent: React.FC = () => {
                     </p>
                   </div>
                 </TableCell>
-                <TableCell>{item.live_status_cn}</TableCell>
+                <TableCell>{item.location_type_cn}</TableCell>
                 <TableCell>{item.created_at}</TableCell>
                 {/* <TableCell>{item.status_cn}</TableCell> */}
                 <TableCell>
-                  <div className="w-[100px]">
+                  {/* <div className="w-[100px]">
                     <div>{item.start_time?.slice(0, 10)}</div>
 
                     {item.expire_time && <div className="ml-8">-</div>}
                     <div>{item.expire_time?.slice(0, 10)}</div>
-                  </div>
+                  </div> */}
+                  <div>{item.remain_valid_days}</div>
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-4 items-center">
