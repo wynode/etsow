@@ -12,25 +12,28 @@ declare global {
   }
 
   interface TableItem {
-    id: number;
-    location: string;
-    nickname: string;
-    rtmp_push_url: string;
-    staff: null;
-    staff_name: string;
-    status: string;
-    status_cn: string;
+    agent_name: string;
+    all_cookies: string;
     cookies: string;
     created_at: string;
     expire_time: string;
+    id: number;
     live_status: string;
     live_status_cn: string;
-    start_time: string;
-    all_cookies: string;
-    remain_valid_days: string;
+    location: string;
+    location_selection: { label: string; value: string }[];
+    location_type: string;
     location_type_cn: string;
+    nickname: string;
+    rtmp_push_url: string;
+    staff: number;
+    staff_name: string;
+    start_time: string;
+    status: string;
+    status_cn: string;
+    tunnel_type: string;
+    remain_valid_days: string;
   }
-
   interface TableComponentProps {
     tableListData: TableItem[];
   }

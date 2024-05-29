@@ -1,18 +1,26 @@
 import { BrowserWindow, Menu, MenuItem, shell } from "electron";
 import path from "node:path";
-import { MAIN_DIST, RENDERER_DIST, VITE_DEV_SERVER_URL } from "../index";
+import { fileURLToPath } from "node:url";
 
-const preload = path.join(__dirname, "../../preload/index.mjs");
+const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL;
+
+const RENDERER_DIST = path.join(
+  path.join(path.dirname(fileURLToPath(import.meta.url)), "../.."),
+  "dist"
+);
+const preload = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../preload/index.mjs"
+);
 const indexHtml = path.join(RENDERER_DIST, "index.html");
 
 export function createMainWindow(): BrowserWindow {
-  console.log("xxx");
   let win = new BrowserWindow({
     width: 1440,
     height: 800,
     resizable: false,
     autoHideMenuBar: true,
-    title: "探行- V1.1.0",
+    title: "探行 - V1.1.1",
     icon: path.join(process.env.VITE_PUBLIC, "favicon.ico"),
     webPreferences: {
       preload,

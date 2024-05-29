@@ -1,5 +1,5 @@
 import { app, BrowserWindow } from "electron";
-import { createRequire } from "node:module";
+// import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import os from "node:os";
@@ -8,10 +8,13 @@ import { registerMainIpcHandlers } from "./ipcHandlers/main";
 import { registerDouyinIpcHandlers } from "./ipcHandlers/douyin";
 import { registerTiktokIpcHandlers } from "./ipcHandlers/tiktok";
 
-const require = createRequire(import.meta.url);
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// const require = createRequire(import.meta.url);
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
-process.env.APP_ROOT = path.join(__dirname, "../..");
+process.env.APP_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "../..");
+
+// process.env.APP_ROOT = path.join(__dirname, "../..");
 
 export const MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron");
 export const RENDERER_DIST = path.join(process.env.APP_ROOT, "dist");

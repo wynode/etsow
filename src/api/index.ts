@@ -1,5 +1,5 @@
-// const BASE_URL = "http://livetool.etsow.com"; // 替换为你的实际 API 域名
-const BASE_URL = "http://154.22.111.74:8502"; // 替换为你的实际 API 域名
+const BASE_URL = "http://livetool.etsow.com"; // 替换为你的实际 API 域名
+// const BASE_URL = "http://154.22.111.74:8502"; // 替换为你的实际 API 域名
 
 async function request(path: string, options: RequestInit = {}) {
   const token = localStorage.getItem("token"); // 从本地存储中获取 token
@@ -72,8 +72,8 @@ export async function postCookies(
   });
 }
 
-export async function getTunnelList() {
-  return request("/tunnel/?vs=qd-1.1.0", {
+export async function getTunnelList(page: number, per_page: number) {
+  return request(`/tunnel/?page=${page}&page_size=${per_page}&vs=zx-1.1.1`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -100,13 +100,16 @@ export async function offlineUser(id: number) {
   });
 }
 
-export async function getDouyinTunnelList() {
-  return request("/tunnel/get_douyin_tunnel/?vs=qd-1.1.0", {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+export async function getDouyinTunnelList(page: number, per_page: number) {
+  return request(
+    `/tunnel/get_douyin_tunnel/?page=${page}&page_size=${per_page}&vs=zx-1.1.1`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
 }
 
 export async function LoginDouyinTunnel(
@@ -179,4 +182,3 @@ export async function postVerifyCode(params: VerifyCodeParams): Promise<void> {
     body: JSON.stringify(params),
   });
 }
-

@@ -55,6 +55,12 @@ export default function UpdateLog() {
                 <p>3、添加重新登录按钮</p>
                 <p>4、下播修改为释放通道</p>
               </div>
+              <p className="mt-4">版本号 1.1.1 : </p>
+              <div className="ml-4">
+                <p>1、登录抖音、Tiktok不用再点x关闭，登录完成后自动关闭弹窗</p>
+                <p>2、修复串流问题</p>
+                <p>3、添加翻页</p>
+              </div>
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>

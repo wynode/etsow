@@ -1,4 +1,11 @@
 import { BrowserWindow, dialog, session } from "electron";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const preload = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../preload/index.mjs"
+);
 
 export function createLoginWindow(parent: BrowserWindow): BrowserWindow {
   let loginWindow = new BrowserWindow({
@@ -7,6 +14,7 @@ export function createLoginWindow(parent: BrowserWindow): BrowserWindow {
     parent,
     autoHideMenuBar: true,
     webPreferences: {
+      preload,
       partition: "incognito-" + Date.now(),
     },
   });
@@ -16,7 +24,10 @@ export function createLoginWindow(parent: BrowserWindow): BrowserWindow {
   loginWindow.webContents.on(
     "did-fail-load",
     (event, errorCode, errorDescription, validatedURL) => {
-      dialog.showErrorBox("加载失败", `TikTok 网站加载失败: ${errorDescription}`);
+      dialog.showErrorBox(
+        "加载失败",
+        `TikTok 网站加载失败: ${errorDescription}`
+      );
     }
   );
 
@@ -31,9 +42,8 @@ export function createLoginWindow(parent: BrowserWindow): BrowserWindow {
               loggedIn = true;
               setTimeout(() => {
                 const username = document.querySelector('a[data-e2e="nav-profile"]').getAttribute('href').slice(2);
-                console.log(username, '------');
                 window.ipcRenderer.saveTiktokUsername(username);
-              });
+              }, 1000);
             }
           }
         }
@@ -64,5 +74,7 @@ export async function createRestoreTiktokWindow(item: any) {
     },
   });
 
-  tiktokWindow.loadURL("https://www.tiktok.com/");
+  tiktokWindow.loadURL(
+    "https://shop.tiktok.com/streamer/live/product/dashboard"
+  );
 }

@@ -1,11 +1,13 @@
 import { ipcMain, BrowserWindow, session, dialog } from "electron";
-import { createLoginWindow, createRestoreTiktokWindow } from '../windows/tiktokWindows';
+import {
+  createLoginWindow,
+  createRestoreTiktokWindow,
+} from "../windows/tiktokWindows";
 
-let tiktokCookies: string | undefined = "";
-
+let tiktokLoginWindow: BrowserWindow | undefined = undefined;
 export function registerTiktokIpcHandlers(win: BrowserWindow) {
-  ipcMain.on("open-login-window", () => {
-    createLoginWindow(win);
+  ipcMain.on("open-tiktok-window", () => {
+    tiktokLoginWindow = createLoginWindow(win);
   });
 
   ipcMain.on("restore-tiktok-window", (event, item) => {
@@ -14,9 +16,13 @@ export function registerTiktokIpcHandlers(win: BrowserWindow) {
 
   ipcMain.on("save-tiktok-username", async (event, username) => {
     try {
-      const cookies = await win.webContents.session.cookies.get({ url: "https://www.tiktok.com" });
-      const formattedCookies = cookies.map((cookie) => `${cookie.name}=${cookie.value}`).join("; ");
-      tiktokCookies = formattedCookies;
+      const cookies =
+        (await tiktokLoginWindow?.webContents.session.cookies.get({
+          url: "https://www.tiktok.com",
+        })) || [];
+      const formattedCookies = cookies
+        .map((cookie) => `${cookie.name}=${cookie.value}`)
+        .join("; ");
 
       const tiktokInfo = {
         cookies: formattedCookies,
@@ -24,17 +30,12 @@ export function registerTiktokIpcHandlers(win: BrowserWindow) {
         nickname: username,
         location: "us",
       };
-
-      win.webContents.send("cookie-post", tiktokInfo);
+      win.webContents.send("tiktok-cookie-post", tiktokInfo);
+      tiktokLoginWindow?.destroy(); // 获取到 Cookies 后再关闭窗口
     } catch (error) {
       console.error("获取 Cookies 失败:", error);
-      win.webContents.send("cookie-post", {});
+      win.webContents.send("tiktok-cookie-post", {});
+      tiktokLoginWindow?.destroy(); // 获取到 Cookies 后再关闭窗口
     }
   });
-
-  ipcMain.on("get-tiktok-cookies", async (event) => {
-    event.reply("tiktok-cookies", tiktokCookies);
-  });
-
-  // Add more TikTok IPC handlers here
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Divide, Loader2 } from "lucide-react";
 import { downloadUrl } from "@/config";
@@ -40,6 +40,16 @@ import {
   DialogFooter,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNumbers,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -52,89 +62,58 @@ import {
 
 import { copyToClipboard } from "@/lib/utils"; // 导入工具函数
 
-let selected: TableItem | null = null;
+const initialTableItem: TableItem = {
+  agent_name: "",
+  all_cookies: "",
+  cookies: "",
+  created_at: "",
+  expire_time: "",
+  id: 0,
+  live_status: "",
+  live_status_cn: "",
+  location: "",
+  location_selection: [],
+  location_type: "",
+  location_type_cn: "",
+  nickname: "",
+  rtmp_push_url: "",
+  staff: 0,
+  staff_name: "",
+  start_time: "",
+  status: "",
+  status_cn: "",
+  tunnel_type: "",
+  remain_valid_days: "",
+};
 
 const TableComponent: React.FC = () => {
-  const [selectedItem, setSelectedItem] = useState<TableItem | null>(null);
+  const isTiktokCookiePostListenerSet = useRef(false);
+  const selectedItemRef = useRef<{
+    action: string;
+    item: TableItem;
+  }>({ action: "", item: initialTableItem });
+  const [currentItem, setCurrentItem] = useState<TableItem>(initialTableItem);
+  const [selectedItem, setSelectedItem] = useState<{
+    action: string;
+    item: TableItem;
+  }>({ action: "", item: initialTableItem });
   const [fetchLoading, setFetchLoading] = useState(false);
   const [tableLoading, setTableLoading] = useState(false);
-  const [isFetch, setIsFetch] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage, setPerPage] = useState(50);
+  const [totalPages, setTotalPages] = useState(0);
   const [open, setOpen] = useState(false);
   const [location, setLocation] = useState("us");
-  const { toast } = useToast();
   const [tunnelList, setTunnelList] = useState<TableItem[]>([]);
 
-  const handleOpenLoginWindow = (item: TableItem) => {
-    console.log(item);
-    setSelectedItem(item);
-    selected = item;
-    setTimeout(() => {
-      window.ipcRenderer.send("open-login-window");
-    }, 100);
-  };
+  const { toast } = useToast();
 
-  const handlePostTunnel = () => {
-    window.ipcRenderer.send("open-login-window");
-  };
-
-  const handleOffline = (item: TableItem) => {
-    selected = item;
-    setSelectedItem(item);
-  };
-
-  const handleGetStreamCode = async () => {
-    try {
-      setFetchLoading(true);
-      await LoginTunnel(selectedItem?.id || selected?.id || 1, {
-        location: location,
-      });
-      const data = await getStreamCode(selectedItem?.id || selected?.id || 1);
-      setOpen(false);
-      fetchList();
-      // 处理获取推流码的结果
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "获取推流码结果",
-        description: JSON.stringify(error),
-      });
-      if (JSON.stringify(error).includes("重新登录")) {
-        window.ipcRenderer.send("open-login-window");
-      }
-    } finally {
-      setFetchLoading(false);
-    }
-  };
-
-  const confirmOffline = async () => {
-    console.log(selected, selectedItem);
-    if (selectedItem || selected) {
-      try {
-        setFetchLoading(true);
-        await offlineUser(selectedItem?.id || selected?.id || 1);
-        fetchList();
-        // 处理释放通道的结果
-      } catch (error: any) {
-        toast({
-          variant: "destructive",
-          title: "释放通道出错",
-          description: JSON.stringify(error),
-        });
-        if (JSON.stringify(error).includes("重新登录")) {
-          window.ipcRenderer.send("open-login-window");
-        }
-      } finally {
-        setFetchLoading(false);
-        setSelectedItem(null);
-      }
-    }
-  };
-
-  const fetchList = async () => {
+  const fetchList = async (page: number, per_page: number) => {
     setTableLoading(true);
     try {
-      const res = await getTunnelList();
+      const res = await getTunnelList(page, per_page);
       setTunnelList(res.results);
+      setTotalPages(Math.ceil(res.count / per_page)); // 添加这一行
     } catch (error: any) {
       const errorMsg = JSON.stringify(error);
       if (errorMsg.includes("请下载最新的版本")) {
@@ -150,52 +129,120 @@ const TableComponent: React.FC = () => {
     }
   };
 
-  const handleOpenShop = (item: TableItem) => {
-    window.ipcRenderer.send("restore-tiktok-window", item);
+  const handleOpenLoginWindow = () => {
+    window.ipcRenderer.send("open-tiktok-window");
+  };
+
+  const handleGetStreamCode = async () => {
+    try {
+      console.log(selectedItem, selectedItemRef.current);
+      setFetchLoading(true);
+      await LoginTunnel(selectedItemRef.current.item.id, {
+        location: location,
+      });
+      await getStreamCode(selectedItemRef.current.item.id);
+      setOpen(false);
+      fetchList(currentPage, perPage);
+      // 处理获取推流码的结果
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "获取推流码结果",
+        description: JSON.stringify(error),
+      });
+      if (JSON.stringify(error).includes("重新登录")) {
+        window.ipcRenderer.send("open-tiktok-window");
+      }
+    } finally {
+      setFetchLoading(false);
+    }
+  };
+
+  const handleConfirmOffline = async () => {
+    try {
+      setFetchLoading(true);
+      await offlineUser(selectedItemRef.current.item.id);
+      fetchList(currentPage, perPage);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "释放通道出错",
+        description: JSON.stringify(error),
+      });
+      if (JSON.stringify(error).includes("重新登录")) {
+        window.ipcRenderer.send("open-tiktok-window");
+      }
+    } finally {
+      setFetchLoading(false);
+    }
+  };
+
+  const handleOpenShop = () => {
+    window.ipcRenderer.send(
+      "restore-tiktok-window",
+      selectedItemRef.current.item
+    );
   };
 
   useEffect(() => {
-    window.ipcRenderer.on("cookie-post", async (event, tiktokInfo) => {
-      try {
-        if (!tiktokInfo.nickname || tiktokInfo.nickname.includes("?lang=")) {
-          throw new Error("未登录，请在弹出窗口中登录Tiktok");
-        }
-        console.log(selectedItem, selected);
-        if (!isFetch && (selectedItem?.id || selected?.id)) {
-          setFetchLoading(true);
-          setIsFetch(true);
-          await LoginTunnel(selectedItem?.id || selected?.id || 1, {
-            nickname: tiktokInfo.nickname,
-            cookies: tiktokInfo.cookies,
-            all_cookies: tiktokInfo.all_cookies,
-            location: tiktokInfo.location,
-          });
-          fetchList();
-        }
-      } catch (error: any) {
-        toast({
-          variant: "destructive",
-          title: "获取出错",
-          description:
-            error?.non_field_errors || error.message || JSON.stringify(error),
-        });
-      } finally {
-        setIsFetch(false);
-        setFetchLoading(false);
+    selectedItemRef.current = selectedItem;
+    console.log(selectedItem, selectedItemRef.current);
+    if (selectedItem.action === "login") {
+      handleOpenLoginWindow();
+
+      if (!isTiktokCookiePostListenerSet.current) {
+        const handleTiktokCookiePost = async (
+          event: any,
+          tiktokInfo: {
+            cookies: string;
+            all_cookies: string;
+            nickname: string;
+            location: string;
+          }
+        ) => {
+          try {
+            if (!tiktokInfo.nickname) {
+              throw new Error("未登录，请在弹出窗口中登录Tiktok");
+            }
+            if (selectedItemRef.current?.item?.id) {
+              setFetchLoading(true);
+              await LoginTunnel(selectedItemRef.current?.item?.id, {
+                nickname: tiktokInfo.nickname,
+                cookies: tiktokInfo.cookies,
+                all_cookies: tiktokInfo.all_cookies,
+                location: tiktokInfo.location,
+              });
+              fetchList(currentPage, perPage);
+            }
+          } catch (error: any) {
+            toast({
+              variant: "destructive",
+              title: "获取出错",
+              description: JSON.stringify(error),
+            });
+          } finally {
+            setFetchLoading(false);
+          }
+        };
+
+        window.ipcRenderer.on("tiktok-cookie-post", handleTiktokCookiePost);
+        isTiktokCookiePostListenerSet.current = true;
       }
-    });
-    fetchList();
-    return () => {
-      // 在组件卸载时移除监听器
-      // window.ipcRenderer.removeAllListeners("tiktok-cookies");
-    };
-  }, []);
+    } else if (selectedItem.action === "getStreamUrl") {
+      handleGetStreamCode();
+    } else if (selectedItem.action === "offline") {
+      handleConfirmOffline();
+    } else if (selectedItem.action === "openShop") {
+      handleOpenShop();
+    }
+  }, [selectedItem]);
+
+  useEffect(() => {
+    fetchList(currentPage, perPage);
+  }, [currentPage, perPage]);
 
   return (
     <div>
-      {/* <Button onClick={() => handlePostTunnel()} className="mb-4">
-        登录TikTok并建立通道
-      </Button> */}
       <Table>
         <TableHeader>
           <TableRow>
@@ -205,8 +252,6 @@ const TableComponent: React.FC = () => {
             <TableHead>推流地址</TableHead>
             <TableHead>版本</TableHead>
             <TableHead>登录时间</TableHead>
-
-            {/* <TableHead>通道状态</TableHead> */}
             <TableHead>通道期限</TableHead>
             <TableHead>操作</TableHead>
           </TableRow>
@@ -217,7 +262,7 @@ const TableComponent: React.FC = () => {
             const rtmp2 = item?.rtmp_push_url?.split("/stage/")[1];
             return (
               <TableRow key={item.id}>
-                <TableCell>{index + 1}</TableCell>
+                <TableCell>{item.id}</TableCell>
                 <TableCell>{item.nickname}</TableCell>
                 <TableCell>{item.location}</TableCell>
                 <TableCell>
@@ -249,16 +294,11 @@ const TableComponent: React.FC = () => {
                     </p>
                   </div>
                 </TableCell>
-                <TableCell>{item.location_type_cn}</TableCell>
+                <TableCell className="w-[100px]">
+                  {item.location_type_cn}
+                </TableCell>
                 <TableCell>{item.created_at}</TableCell>
-                {/* <TableCell>{item.status_cn}</TableCell> */}
                 <TableCell>
-                  {/* <div className="w-[100px]">
-                    <div>{item.start_time?.slice(0, 10)}</div>
-
-                    {item.expire_time && <div className="ml-8">-</div>}
-                    <div>{item.expire_time?.slice(0, 10)}</div>
-                  </div> */}
                   <div>{item.remain_valid_days}</div>
                 </TableCell>
                 <TableCell>
@@ -267,7 +307,12 @@ const TableComponent: React.FC = () => {
                       ""
                     ) : (
                       <Button
-                        onClick={() => handleOpenLoginWindow(item)}
+                        onClick={() =>
+                          setSelectedItem({
+                            action: "login",
+                            item,
+                          })
+                        }
                         disabled={fetchLoading}
                       >
                         {fetchLoading && (
@@ -276,84 +321,93 @@ const TableComponent: React.FC = () => {
                         {item.nickname ? "重新登录" : "登录TikTok"}
                       </Button>
                     )}
-                    {item.nickname && !item.rtmp_push_url ? (
-                      <Dialog
-                        open={open}
-                        onOpenChange={(open) => {
-                          setSelectedItem(item);
-                          selected = item;
-                          console.log(item);
-                          setOpen(open);
-                          console.log(item);
-                        }}
-                      >
-                        <DialogTrigger asChild>
-                          <Button variant="outline">获取推流码</Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[460px]">
-                          <DialogHeader>
-                            <DialogTitle>获取推流码</DialogTitle>
-                            <DialogDescription className="mt-4">
-                              请选择您账号的所在地区
-                            </DialogDescription>
-                          </DialogHeader>
-                          <div className="grid gap-4 py-4">
-                            <div className="grid grid-cols-4 items-center gap-4">
-                              <Label htmlFor="device_id" className="text-right">
-                                地区：
-                              </Label>
-                              <Select
-                                defaultValue="us"
-                                onValueChange={(value) => {
-                                  setLocation(value);
-                                }}
-                              >
-                                <SelectTrigger className="w-[180px]">
-                                  <SelectValue placeholder="选择地区" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectGroup>
-                                    <SelectItem value="us">美国</SelectItem>
-                                    <SelectItem value="other">
-                                      其他地区
-                                    </SelectItem>
-                                  </SelectGroup>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                          <DialogFooter>
-                            <Button
-                              type="submit"
-                              disabled={fetchLoading}
-                              onClick={() => handleGetStreamCode()}
+
+                    <Dialog
+                      open={open}
+                      onOpenChange={(open) => {
+                        setOpen(open);
+                      }}
+                    >
+                      <DialogTrigger asChild>
+                        {item.nickname && !item.rtmp_push_url ? (
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              setCurrentItem(item);
+                            }}
+                          >
+                            获取推流码
+                          </Button>
+                        ) : (
+                          ""
+                        )}
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[460px]">
+                        <DialogHeader>
+                          <DialogTitle>获取推流码</DialogTitle>
+                          <DialogDescription className="mt-4">
+                            请选择您账号的所在地区
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="device_id" className="text-right">
+                              地区：
+                            </Label>
+                            <Select
+                              defaultValue="us"
+                              onValueChange={(value) => {
+                                setLocation(value);
+                              }}
                             >
-                              {fetchLoading && (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              )}
-                              确定
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-                    ) : (
-                      ""
-                    )}
+                              <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="选择地区" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectGroup>
+                                  <SelectItem value="us">美国</SelectItem>
+                                  <SelectItem value="other">
+                                    其他地区
+                                  </SelectItem>
+                                </SelectGroup>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button
+                            type="submit"
+                            disabled={fetchLoading}
+                            onClick={(e) => {
+                              setSelectedItem({
+                                action: "getStreamUrl",
+                                item: currentItem,
+                              });
+                            }}
+                          >
+                            {fetchLoading && (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            )}
+                            确定
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
 
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        {item.rtmp_push_url ? (
+                        {item.rtmp_push_url && (
                           <Button
-                            onClick={() => handleOffline(item)}
                             disabled={fetchLoading}
+                            onClick={() => {
+                              setCurrentItem(item);
+                            }}
                           >
                             {fetchLoading && (
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             )}
                             释放通道
                           </Button>
-                        ) : (
-                          ""
                         )}
                       </AlertDialogTrigger>
                       <AlertDialogContent>
@@ -365,16 +419,28 @@ const TableComponent: React.FC = () => {
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>取消</AlertDialogCancel>
-                          <AlertDialogAction onClick={confirmOffline}>
+                          <AlertDialogAction
+                            onClick={() =>
+                              setSelectedItem({
+                                action: "offline",
+                                item: currentItem,
+                              })
+                            }
+                          >
                             确认
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
 
-                    {item.all_cookies ? (
+                    {item.all_cookies && (
                       <Button
-                        onClick={() => handleOpenShop(item)}
+                        onClick={() =>
+                          setSelectedItem({
+                            action: "openShop",
+                            item,
+                          })
+                        }
                         disabled={fetchLoading}
                       >
                         {fetchLoading && (
@@ -382,8 +448,6 @@ const TableComponent: React.FC = () => {
                         )}
                         打开小店
                       </Button>
-                    ) : (
-                      ""
                     )}
                   </div>
                 </TableCell>
@@ -392,6 +456,39 @@ const TableComponent: React.FC = () => {
           })}
         </TableBody>
       </Table>
+      {tunnelList.length && (
+        <Pagination className="mt-10">
+          <PaginationContent>
+            <PaginationPrevious
+              onClick={() => {
+                if (currentPage > 1) {
+                  setCurrentPage(currentPage - 1);
+                  // fetchList(currentPage - 1, perPage);
+                }
+              }}
+              isActive={currentPage !== 1}
+            />
+            <PaginationNumbers
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={(page) => {
+                setCurrentPage(page);
+                // fetchList(page, perPage);
+              }}
+            />
+            <PaginationNext
+              onClick={() => {
+                if (currentPage < totalPages) {
+                  setCurrentPage(currentPage + 1);
+                  // fetchList(currentPage + 1, perPage);
+                }
+              }}
+              isActive={currentPage !== totalPages}
+            />
+          </PaginationContent>
+        </Pagination>
+      )}
+
       <div className="flex justify-center mt-28 text-gray-500">
         {tunnelList.length ? (
           <div>TikTok通道不够？联系管理员可开通更多通道哦～ </div>

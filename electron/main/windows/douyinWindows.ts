@@ -1,7 +1,11 @@
 import { BrowserWindow, dialog, session } from "electron";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const preload = path.join(__dirname, "../../preload/index.mjs");
+const preload = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../preload/index.mjs"
+);
 
 export function createDouyinWindow(parent: BrowserWindow): BrowserWindow {
   let loginWindow = new BrowserWindow({
@@ -20,7 +24,10 @@ export function createDouyinWindow(parent: BrowserWindow): BrowserWindow {
   loginWindow.webContents.on(
     "did-fail-load",
     (event, errorCode, errorDescription, validatedURL) => {
-      dialog.showErrorBox("加载失败", `抖音网站加载失败，请检查网络: ${errorDescription}`);
+      dialog.showErrorBox(
+        "加载失败",
+        `抖音网站加载失败，请检查网络: ${errorDescription}`
+      );
     }
   );
 
@@ -37,7 +44,7 @@ export function createDouyinWindow(parent: BrowserWindow): BrowserWindow {
                 const username = document.getElementById('douyin-header').querySelectorAll('a[target="_self"]')[1].textContent;
                 console.log(username, '------');
                 window.ipcRenderer.saveDouyinUsername(username);
-              });
+              }, 1000);
             }
           }
         }
