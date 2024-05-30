@@ -38,16 +38,10 @@ const Container: React.FC<ContainerProps> = ({ onLoginOut, userName }) => {
   );
 
   const handelBannerClick = () => {
-    window.ipcRenderer.send(
-      "open-url",
-      "https://console-api.etsow.com/live_tools/static/定制版_OBS.zip"
-    );
+    window.open('https://console-api.etsow.com/live_tools/static/定制版_OBS.zip')
   };
   const handelBanner2Click = () => {
-    window.ipcRenderer.send(
-      "open-url",
-      "https://work.weixin.qq.com/ca/cawcde945a90447f0f"
-    );
+    window.open('https://work.weixin.qq.com/ca/cawcde945a90447f0f')
   };
 
 
