@@ -20,7 +20,7 @@ export function createMainWindow(): BrowserWindow {
     height: 800,
     resizable: false,
     autoHideMenuBar: true,
-    title: "探行 - V1.1.1",
+    title: "探行 - V1.1.2",
     icon: path.join(process.env.VITE_PUBLIC, "favicon.ico"),
     webPreferences: {
       preload,

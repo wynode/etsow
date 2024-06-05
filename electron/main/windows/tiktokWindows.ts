@@ -56,7 +56,11 @@ export function createLoginWindow(parent: BrowserWindow): BrowserWindow {
 }
 
 export async function createRestoreTiktokWindow(item: any) {
-  const tiktokSession = session.fromPartition("persist:tiktok");
+  // 使用时间戳和随机数生成一个唯一的会话分区标识符
+  const uniqueId = `tiktok_${Date.now()}_${Math.random()
+    .toString(36)
+    .substr(2, 9)}`;
+  const tiktokSession = session.fromPartition(`persist:${uniqueId}`);
   const cookies = JSON.parse(item.all_cookies);
 
   for (const cookie of cookies) {

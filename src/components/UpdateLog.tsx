@@ -61,6 +61,11 @@ export default function UpdateLog() {
                 <p>2、修复串流问题</p>
                 <p>3、添加翻页</p>
               </div>
+              <p className="mt-4">版本号 1.1.2 : </p>
+              <div className="ml-4">
+                <p>1、修复登录窗口大小问题</p>
+                <p>2、修复连续打开Tiktok小店会替换前一个账号的问题</p>
+              </div>
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>

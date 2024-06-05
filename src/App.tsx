@@ -11,7 +11,9 @@ const LoginPage: React.FC = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userName");
     window.ipcRenderer.send("change-window-size", { width: 1440, height: 670 });
-    setIsLoggedIn(false);
+    setTimeout(() => {
+      setIsLoggedIn(false);
+    }, 1000);
   };
 
   const handleLogin = (username: any) => {

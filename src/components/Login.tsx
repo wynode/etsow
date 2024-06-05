@@ -90,7 +90,7 @@ const LoginRegister: React.FC<LoginRegisterProps> = ({ onLoginSuccess }) => {
         autoPlay
         controls={false}
         loop={true}
-        className="h-screen"
+        className="max-h-[642px]"
       ></video>
       <div className="max-h-96 z-10 flex-grow">
         <div className="w-64 mx-auto">

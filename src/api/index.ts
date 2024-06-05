@@ -73,7 +73,7 @@ export async function postCookies(
 }
 
 export async function getTunnelList(page: number, per_page: number) {
-  return request(`/tunnel/?page=${page}&page_size=${per_page}&vs=zx-1.1.1`, {
+  return request(`/tunnel/?page=${page}&page_size=${per_page}&vs=zx-1.1.2`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -102,7 +102,7 @@ export async function offlineUser(id: number) {
 
 export async function getDouyinTunnelList(page: number, per_page: number) {
   return request(
-    `/tunnel/get_douyin_tunnel/?page=${page}&page_size=${per_page}&vs=zx-1.1.1`,
+    `/tunnel/get_douyin_tunnel/?page=${page}&page_size=${per_page}&vs=zx-1.1.2`,
     {
       method: "GET",
       headers: {
