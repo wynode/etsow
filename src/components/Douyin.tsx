@@ -12,6 +12,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Step,
+  StepDescription,
+  StepIcon,
+  StepIndicator,
+  StepNumber,
+  StepSeparator,
+  StepStatus,
+  StepTitle,
+  Stepper,
+  useSteps,
+  Box,
+} from "@chakra-ui/react";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -75,7 +88,35 @@ const initialTableItem: TableItem = {
   remain_valid_days: "",
 };
 
+const steps = [
+  {
+    title: "扫描登录抖音",
+    description: "点击登录按钮后扫描登录，等待几秒将自动关闭窗口并获取用户名",
+  },
+  {
+    title: "手机打开直播",
+    description: "手机打开并开始直播，可提前设置上线商品，或者后续在小店设置",
+  },
+  {
+    title: "填写设备ID并获取推流码",
+    description: "填写设备ID，设备ID在抖音设置最下方，注意要填写正确",
+  },
+  {
+    title: "设置OBS并开播",
+    description: "OBS进入设置->自播->自定义，填写对应的推流地址和推流码并开播",
+  },
+  {
+    title: "直播手机被动断网",
+    description:
+      "直播的手机一定不能动，请通过拔网线、关路由等方式被动让手机断网",
+  },
+];
+
 const TableComponent: React.FC = () => {
+  const { activeStep } = useSteps({
+    index: 0,
+    count: steps.length,
+  });
   const isDouyinCookiePostListenerSet = useRef(false);
   const selectedItemRef = useRef<{
     action: string;
@@ -483,16 +524,44 @@ const TableComponent: React.FC = () => {
         </Pagination>
       )}
 
-      <div className="flex justify-center mt-28 text-gray-500">
+      <div className="flex justify-center mt-10 text-gray-500">
         {tunnelList.length ? (
           <div>抖音通道不够？联系管理员可开通更多通道哦～ </div>
         ) : (
           <div>您还没有开通抖音通道，请联系管理员开启～ </div>
         )}
       </div>
-      <div className="flex justify-center mt-20">
-        {tableLoading && <Loader2 className="h-20 w-20 animate-spin" />}
-      </div>
+
+      {tableLoading && (
+        <div className="flex justify-center mt-20">
+          <Loader2 className="h-20 w-20 animate-spin" />
+        </div>
+      )}
+
+      {!tableLoading && (
+        <Stepper index={activeStep} className="p-10">
+          {steps.map((step, index) => (
+            <Step key={index}>
+              <StepIndicator className="text-primary !border-primary">
+                <StepStatus
+                  complete={<StepIcon />}
+                  incomplete={<StepNumber />}
+                  active={<StepNumber />}
+                />
+              </StepIndicator>
+
+              <Box flexShrink="0">
+                <StepTitle>{step.title}</StepTitle>
+                <StepDescription className="w-[180px]">
+                  {step.description}
+                </StepDescription>
+              </Box>
+
+              <StepSeparator />
+            </Step>
+          ))}
+        </Stepper>
+      )}
     </div>
   );
 };
