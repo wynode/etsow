@@ -214,49 +214,44 @@ const TableComponent: React.FC = () => {
     );
   };
 
+  const handleDouyinCookiePost = async (
+    event: any,
+    douyinInfo: {
+      cookies: string;
+      all_cookies: string;
+      nickname: string;
+      location: string;
+    }
+  ) => {
+    try {
+      if (!douyinInfo.nickname) {
+        throw new Error("未登录，请在弹出窗口中登录抖音");
+      }
+      if (selectedItemRef.current?.item?.id) {
+        setFetchLoading(true);
+        await LoginDouyinTunnel(selectedItemRef.current?.item?.id, {
+          nickname: douyinInfo.nickname,
+          cookies: douyinInfo.cookies,
+          all_cookies: douyinInfo.all_cookies,
+        });
+        fetchList(currentPage, perPage);
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "获取出错",
+        description: JSON.stringify(error),
+      });
+    } finally {
+      setFetchLoading(false);
+    }
+  };
+
   useEffect(() => {
     selectedItemRef.current = selectedItem;
     console.log(selectedItem, selectedItemRef.current);
     if (selectedItem.action === "login") {
       handleOpenLoginWindow();
-
-      if (!isDouyinCookiePostListenerSet.current) {
-        const handledouyinCookiePost = async (
-          event: any,
-          douyinInfo: {
-            cookies: string;
-            all_cookies: string;
-            nickname: string;
-            location: string;
-          }
-        ) => {
-          try {
-            if (!douyinInfo.nickname) {
-              throw new Error("未登录，请在弹出窗口中登录抖音");
-            }
-            if (selectedItemRef.current?.item?.id) {
-              setFetchLoading(true);
-              await LoginDouyinTunnel(selectedItemRef.current?.item?.id, {
-                nickname: douyinInfo.nickname,
-                cookies: douyinInfo.cookies,
-                all_cookies: douyinInfo.all_cookies,
-              });
-              fetchList(currentPage, perPage);
-            }
-          } catch (error: any) {
-            toast({
-              variant: "destructive",
-              title: "获取出错",
-              description: JSON.stringify(error),
-            });
-          } finally {
-            setFetchLoading(false);
-          }
-        };
-
-        window.ipcRenderer.on("douyin-cookie-post", handledouyinCookiePost);
-        isDouyinCookiePostListenerSet.current = true;
-      }
     } else if (selectedItem.action === "getStreamUrl") {
       handleGetStreamCode();
     } else if (selectedItem.action === "offline") {
@@ -265,6 +260,13 @@ const TableComponent: React.FC = () => {
       handleOpenShop();
     }
   }, [selectedItem]);
+
+  useEffect(() => {
+    window.ipcRenderer.on("douyin-cookie-post", handleDouyinCookiePost);
+    return () => {
+      window.ipcRenderer.off("douyin-cookie-post", handleDouyinCookiePost);
+    };
+  }, []);
 
   useEffect(() => {
     fetchList(currentPage, perPage);

@@ -1,6 +1,6 @@
 {
   "name": "etsow",
-  "version": "1.1.2",
+  "version": "1.1.4",
   "main": "dist-electron/main/index.js",
   "description": "etsow livetools",
   "author": "wynode.com",
@@ -44,6 +44,8 @@
     "embla-carousel-react": "^8.0.4",
     "framer-motion": "^11.2.10",
     "lucide-react": "^0.373.0",
+    "playwright": "^1.44.1",
+    "puppeteer": "^22.11.1",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7"
   },

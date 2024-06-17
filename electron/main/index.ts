@@ -7,6 +7,7 @@ import { createMainWindow } from "./windows/mainWindow";
 import { registerMainIpcHandlers } from "./ipcHandlers/main";
 import { registerDouyinIpcHandlers } from "./ipcHandlers/douyin";
 import { registerTiktokIpcHandlers } from "./ipcHandlers/tiktok";
+import { registerCollectionIpcHandlers } from "./ipcHandlers/collection";
 
 // const require = createRequire(import.meta.url);
 // const __filename = fileURLToPath(import.meta.url);
@@ -40,6 +41,7 @@ app.whenReady().then(() => {
     registerMainIpcHandlers(win);
     registerDouyinIpcHandlers(win);
     registerTiktokIpcHandlers(win);
+    registerCollectionIpcHandlers(win); // 注册 Collection IPC 处理程序
   }
 });
 

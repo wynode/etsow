@@ -38,7 +38,7 @@ export function createLoginWindow(parent: BrowserWindow): BrowserWindow {
         for (let mutation of mutations) {
           if (mutation.type === 'childList') {
             const loginElement = document.getElementById('app-header') ? document.getElementById('app-header').textContent : '登录'
-            if (!loginElement.includes('登录') && !loggedIn) {
+            if (!loginElement.includes('登录') && !loginElement.includes('Log in') && !loggedIn) {
               loggedIn = true;
               setTimeout(() => {
                 const username = document.querySelector('a[data-e2e="nav-profile"]').getAttribute('href').slice(2);

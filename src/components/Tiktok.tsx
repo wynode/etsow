@@ -222,50 +222,44 @@ const TableComponent: React.FC = () => {
     );
   };
 
+  const handleTiktokCookiePost = async (
+    event: any,
+    tiktokInfo: {
+      cookies: string;
+      all_cookies: string;
+      nickname: string;
+      location: string;
+    }
+  ) => {
+    try {
+      if (!tiktokInfo.nickname) {
+        throw new Error("未登录，请在弹出窗口中登录Tiktok");
+      }
+      if (selectedItemRef.current?.item?.id) {
+        setFetchLoading(true);
+        await LoginTunnel(selectedItemRef.current?.item?.id, {
+          nickname: tiktokInfo.nickname,
+          cookies: tiktokInfo.cookies,
+          all_cookies: tiktokInfo.all_cookies,
+          location: tiktokInfo.location,
+        });
+        fetchList(currentPage, perPage);
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "获取出错",
+        description: JSON.stringify(error),
+      });
+    } finally {
+      setFetchLoading(false);
+    }
+  };
+
   useEffect(() => {
     selectedItemRef.current = selectedItem;
-    console.log(selectedItem, selectedItemRef.current);
     if (selectedItem.action === "login") {
       handleOpenLoginWindow();
-
-      if (!isTiktokCookiePostListenerSet.current) {
-        const handleTiktokCookiePost = async (
-          event: any,
-          tiktokInfo: {
-            cookies: string;
-            all_cookies: string;
-            nickname: string;
-            location: string;
-          }
-        ) => {
-          try {
-            if (!tiktokInfo.nickname) {
-              throw new Error("未登录，请在弹出窗口中登录Tiktok");
-            }
-            if (selectedItemRef.current?.item?.id) {
-              setFetchLoading(true);
-              await LoginTunnel(selectedItemRef.current?.item?.id, {
-                nickname: tiktokInfo.nickname,
-                cookies: tiktokInfo.cookies,
-                all_cookies: tiktokInfo.all_cookies,
-                location: tiktokInfo.location,
-              });
-              fetchList(currentPage, perPage);
-            }
-          } catch (error: any) {
-            toast({
-              variant: "destructive",
-              title: "获取出错",
-              description: JSON.stringify(error),
-            });
-          } finally {
-            setFetchLoading(false);
-          }
-        };
-
-        window.ipcRenderer.on("tiktok-cookie-post", handleTiktokCookiePost);
-        isTiktokCookiePostListenerSet.current = true;
-      }
     } else if (selectedItem.action === "getStreamUrl") {
       handleGetStreamCode();
     } else if (selectedItem.action === "offline") {
@@ -274,6 +268,13 @@ const TableComponent: React.FC = () => {
       handleOpenShop();
     }
   }, [selectedItem]);
+
+  useEffect(() => {
+    window.ipcRenderer.on("tiktok-cookie-post", handleTiktokCookiePost);
+    return () => {
+      window.ipcRenderer.off("tiktok-cookie-post", handleTiktokCookiePost);
+    };
+  }, []);
 
   useEffect(() => {
     fetchList(currentPage, perPage);

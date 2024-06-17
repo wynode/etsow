@@ -5,6 +5,7 @@ import Tools from "@/components/Tools";
 import Info from "@/components/Info";
 import ContactUs from "@/components/ContactUs";
 import UpdateLog from "@/components/UpdateLog";
+import Collection from "@/components/Collection";
 import Logo from "@/assets/logo.png";
 import Banner from "@/assets/banner.jpg";
 import Banner2 from "@/assets/banner2.png";
@@ -111,6 +112,7 @@ const Container: React.FC<ContainerProps> = ({ onLoginOut, userName }) => {
             <TabsTrigger value="tiktok">Tiktok推流</TabsTrigger>
             <TabsTrigger value="tools">伙伴专区</TabsTrigger>
             <TabsTrigger value="contact">联系我们</TabsTrigger>
+            <TabsTrigger value="collection">采集TikTok粉丝</TabsTrigger>
           </TabsList>
           <TabsContent value="info">
             <Info></Info>
@@ -126,6 +128,9 @@ const Container: React.FC<ContainerProps> = ({ onLoginOut, userName }) => {
           </TabsContent>
           <TabsContent value="contact">
             <ContactUs></ContactUs>
+          </TabsContent>
+          <TabsContent value="collection">
+            <Collection></Collection>
           </TabsContent>
         </Tabs>
       </div>

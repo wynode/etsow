@@ -27,10 +27,11 @@ export function registerTiktokIpcHandlers(win: BrowserWindow) {
       const tiktokInfo = {
         cookies: formattedCookies,
         all_cookies: JSON.stringify(cookies),
-        nickname: username,
+        nickname: username.replace("?lang=en", ""),
         location: "us",
       };
       win.webContents.send("tiktok-cookie-post", tiktokInfo);
+      win.webContents.send("collection-cookie-post", tiktokInfo);
       tiktokLoginWindow?.destroy(); // 获取到 Cookies 后再关闭窗口
     } catch (error) {
       console.error("获取 Cookies 失败:", error);
