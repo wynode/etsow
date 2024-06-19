@@ -106,8 +106,19 @@ const CollectionPage: React.FC = () => {
 
   useEffect(() => {
     window.ipcRenderer.on("scraped-followers", handleScrapedFollowers);
+    // 监听 "export-complete" 消息
+    const handleExportComplete = () => {
+      toast({
+        title: "导出结果",
+        description: `导出成功，请到选择导出的文件夹中查看`,
+      });
+    };
+
+    window.ipcRenderer.on("export-complete", handleExportComplete);
     return () => {
       window.ipcRenderer.off("scraped-followers", handleScrapedFollowers);
+
+      window.ipcRenderer.off("export-complete", handleExportComplete);
     };
   }, []);
 

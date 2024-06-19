@@ -24,7 +24,7 @@ export default function UpdateLog() {
         <AlertDialogHeader>
           <AlertDialogTitle>更新日志</AlertDialogTitle>
           <AlertDialogDescription>
-            <div>
+            <div className="max-h-[500px] overflow-auto">
               <p>版本号 1.0.0 : </p>
               <div className="ml-4">
                 <p>1、完成Tiktik登录</p>

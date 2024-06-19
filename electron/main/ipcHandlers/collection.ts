@@ -1,6 +1,7 @@
 import { ipcMain, dialog } from "electron";
 import fs from "fs";
-import { Page, chromium } from "playwright";
+// import path from "path";
+import puppeteer, { Browser, Page } from "puppeteer";
 
 interface FollowerData {
   username: string;
@@ -13,36 +14,41 @@ async function scrapeFollowers(
   onProgress: (followers: string[]) => void,
   shouldStop: () => boolean
 ): Promise<string[]> {
-  const browser = await chromium.launch({
+  // const isProd = process.env.NODE_ENV === "production";
+  // const executablePath = isProd
+  //   ? path.join(
+  //       process.resourcesPath,
+  //       "chromium",
+  //       "chrome" + (process.platform === "win32" ? ".exe" : "")
+  //     )
+  //   : puppeteer.executablePath();
+  const browser = await puppeteer.launch({
     headless: true,
+    ignoreDefaultArgs: ['--disable-extensions'],
     args: [
       "--window-size=1920,1080",
       "--disable-blink-features=AutomationControlled",
     ],
   });
-  const context = await browser.newContext({
-    userAgent:
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36",
-    viewport: { width: 1920, height: 1080 },
-    javaScriptEnabled: true,
-  });
-  const page: Page = await context.newPage();
+  const page: Page = await browser.newPage();
+  await page.setUserAgent(
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36"
+  );
+  await page.setViewport({ width: 1920, height: 1080 });
+  await page.setJavaScriptEnabled(true);
+
   let followers: string[] = [];
   try {
     const cookies = JSON.parse(all_cookies || "{}");
-    const cookiesWithSameSite = cookies.map((cookie: any) => ({
-      ...cookie,
-      sameSite: "Lax",
-    }));
-    await context.addCookies(cookiesWithSameSite);
+    await page.setCookie(...cookies);
     await page.goto(`https://www.tiktok.com/@${username}`, { timeout: 60000 });
     await page.click('span[data-e2e="followers"]');
-    await page.waitForTimeout(2000); // 等待弹窗完全加载
+    await new Promise((resolve) => setTimeout(resolve, 2000)); // 等待弹窗完全加载
     await page.waitForSelector('div[class*="DivUserListContainer"]', {
-      state: "visible",
+      visible: true,
       timeout: 30000,
     });
-    await page.waitForTimeout(2000); // 等待列表完全加载
+    await new Promise((resolve) => setTimeout(resolve, 2000)); // 等待列表完全加载
 
     const totalFollowers: string = await page.evaluate(() => {
       const dom = document.querySelector('strong[data-e2e="followers-count"]');
@@ -67,7 +73,7 @@ async function scrapeFollowers(
 
       followers = [...new Set([...followers, ...currentFollowers])];
 
-      onProgress(followers); // 调用回调函数，返回当前已收集的粉丝列表
+      onProgress(followers); // 调用回调函数,返回当前已收集的粉丝列表
 
       if (followers.length >= totalCount) {
         break;
@@ -97,19 +103,16 @@ async function scrapeFollowers(
         }
       });
 
-      await page.waitForTimeout(3000); // 等待滚动加载完成
+      await new Promise((resolve) => setTimeout(resolve, 3000)); // 等待滚动加载完成
     }
 
-    await context.close();
     await browser.close();
 
     return followers;
   } catch (error) {
     console.error("Error occurred during scraping:", error);
-    await context.close();
     await browser.close();
     throw new Error(JSON.stringify(error));
-    // return followers; // 返回已收集的粉丝列表
   }
 }
 
@@ -155,7 +158,6 @@ export function registerCollectionIpcHandlers(win: Electron.BrowserWindow) {
               }
               win.webContents.send("scraped-followers", followersData);
             },
-
             () => shouldStopScraping
           );
 
