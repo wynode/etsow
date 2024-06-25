@@ -55,6 +55,54 @@ export function createLoginWindow(parent: BrowserWindow): BrowserWindow {
   return loginWindow;
 }
 
+export function createCollectionLoginWindow(parent: BrowserWindow): BrowserWindow {
+  let loginWindow = new BrowserWindow({
+    width: 640,
+    height: 640,
+    parent,
+    autoHideMenuBar: true,
+    webPreferences: {
+      preload,
+      partition: "incognito-" + Date.now(),
+    },
+  });
+
+  loginWindow.loadURL("https://www.tiktok.com/");
+
+  loginWindow.webContents.on(
+    "did-fail-load",
+    (event, errorCode, errorDescription, validatedURL) => {
+      dialog.showErrorBox(
+        "加载失败",
+        `TikTok 网站加载失败: ${errorDescription}`
+      );
+    }
+  );
+
+  loginWindow.webContents.on("did-finish-load", () => {
+    loginWindow?.webContents.executeJavaScript(`
+      let loggedIn = false;
+      const observer = new MutationObserver((mutations) => {
+        for (let mutation of mutations) {
+          if (mutation.type === 'childList') {
+            const loginElement = document.getElementById('app-header') ? document.getElementById('app-header').textContent : '登录'
+            if (!loginElement.includes('登录') && !loginElement.includes('Log in') && !loggedIn) {
+              loggedIn = true;
+              setTimeout(() => {
+                const username = document.querySelector('a[data-e2e="nav-profile"]').getAttribute('href').slice(2);
+                window.ipcRenderer.send('save-tiktok-cookies');
+              }, 1000);
+            }
+          }
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    `);
+  });
+
+  return loginWindow;
+}
+
 export async function createRestoreTiktokWindow(item: any) {
   // 使用时间戳和随机数生成一个唯一的会话分区标识符
   const uniqueId = `tiktok_${Date.now()}_${Math.random()

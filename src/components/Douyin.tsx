@@ -107,8 +107,7 @@ const steps = [
   },
   {
     title: "直播手机被动断网",
-    description:
-      "直播的手机一定不能动，请通过拔网线、关路由等方式被动让手机断网",
+    description: "请通过拔网线、关路由、断热点等方式被动让直播手机断网",
   },
 ];
 
@@ -288,192 +287,203 @@ const TableComponent: React.FC = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {tunnelList?.map((item, index) => {
-            const rtmp1 = item?.rtmp_push_url?.split("/stream")[0];
-            const rtmp2 = item?.rtmp_push_url?.split("/stage/")[1];
-            return (
-              <TableRow key={item.id}>
-                <TableCell>{index + 1}</TableCell>
-                <TableCell>{item.nickname}</TableCell>
-                {/* <TableCell>{item.location}</TableCell> */}
-                <TableCell>
-                  <div className="space-y-4 w-[480px]">
-                    <p>
-                      推流地址：{rtmp1}
-                      {rtmp1 && (
-                        <Button
-                          size="sm"
-                          className="ml-4"
-                          onClick={() => copyToClipboard(rtmp1, toast)}
-                        >
-                          复制
-                        </Button>
-                      )}
-                    </p>
-                    <p className="break-words">
-                      推流密钥：
-                      <span className="break-all">{rtmp2}</span>
-                      {rtmp2 && (
-                        <Button
-                          size="sm"
-                          className="ml-4"
-                          onClick={() => copyToClipboard(rtmp2, toast)}
-                        >
-                          复制
-                        </Button>
-                      )}
-                    </p>
-                  </div>
-                </TableCell>
-                {/* <TableCell>{item.live_status_cn}</TableCell> */}
-                <TableCell>{item.created_at}</TableCell>
-                <TableCell>
-                  {/* <div className="w-[100px]">
+          {tunnelList
+            ?.filter((item) => {
+              const remainingDays = item.expire_time
+                ? Math.ceil(
+                    (new Date(item.expire_time).getTime() -
+                      new Date().getTime()) /
+                      (1000 * 60 * 60 * 24)
+                  )
+                : 0;
+              return remainingDays > 0;
+            })
+            ?.map((item, index) => {
+              const rtmp1 = item?.rtmp_push_url?.split("/stream")[0];
+              const rtmp2 = item?.rtmp_push_url?.split("/stage/")[1];
+              return (
+                <TableRow key={item.id}>
+                  <TableCell>{index + 1}</TableCell>
+                  <TableCell>{item.nickname}</TableCell>
+                  {/* <TableCell>{item.location}</TableCell> */}
+                  <TableCell>
+                    <div className="space-y-4 w-[480px]">
+                      <p>
+                        推流地址：{rtmp1}
+                        {rtmp1 && (
+                          <Button
+                            size="sm"
+                            className="ml-4"
+                            onClick={() => copyToClipboard(rtmp1, toast)}
+                          >
+                            复制
+                          </Button>
+                        )}
+                      </p>
+                      <p className="break-words">
+                        推流密钥：
+                        <span className="break-all">{rtmp2}</span>
+                        {rtmp2 && (
+                          <Button
+                            size="sm"
+                            className="ml-4"
+                            onClick={() => copyToClipboard(rtmp2, toast)}
+                          >
+                            复制
+                          </Button>
+                        )}
+                      </p>
+                    </div>
+                  </TableCell>
+                  {/* <TableCell>{item.live_status_cn}</TableCell> */}
+                  <TableCell>{item.created_at}</TableCell>
+                  <TableCell>
+                    {/* <div className="w-[100px]">
                     <div>{item.start_time?.slice(0, 10)}</div>
 
                     {item.expire_time && <div className="ml-8">-</div>}
                     <div>{item.expire_time?.slice(0, 10)}</div>
                   </div> */}
-                  <div>
-                    {item.expire_time
-                      ? Math.ceil(
-                          (new Date(item.expire_time).getTime() -
-                            new Date().getTime()) /
-                            (1000 * 60 * 60 * 24)
-                        )
-                      : 0}
-                    天
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-4 items-center">
-                    {item.rtmp_push_url ? (
-                      ""
-                    ) : (
-                      <Button
-                        onClick={() =>
-                          setSelectedItem({
-                            action: "login",
-                            item,
-                          })
-                        }
-                        disabled={fetchLoading}
+                    <div>
+                      {item.expire_time
+                        ? Math.ceil(
+                            (new Date(item.expire_time).getTime() -
+                              new Date().getTime()) /
+                              (1000 * 60 * 60 * 24)
+                          )
+                        : 0}
+                      天
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-4 items-center">
+                      {item.rtmp_push_url ? (
+                        ""
+                      ) : (
+                        <Button
+                          onClick={() =>
+                            setSelectedItem({
+                              action: "login",
+                              item,
+                            })
+                          }
+                          disabled={fetchLoading}
+                        >
+                          {fetchLoading && (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          )}
+                          {item.nickname ? "重新登录" : "登录抖音"}
+                        </Button>
+                      )}
+
+                      <Dialog
+                        open={open}
+                        onOpenChange={(open) => {
+                          setOpen(open);
+                        }}
                       >
-                        {fetchLoading && (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        )}
-                        {item.nickname ? "重新登录" : "登录抖音"}
-                      </Button>
-                    )}
-
-                    <Dialog
-                      open={open}
-                      onOpenChange={(open) => {
-                        setOpen(open);
-                      }}
-                    >
-                      <DialogTrigger asChild>
-                        {item.nickname && !item.rtmp_push_url ? (
-                          <Button
-                            variant="outline"
-                            onClick={() => {
-                              setCurrentItem(item);
-                            }}
-                          >
-                            获取推流码
-                          </Button>
-                        ) : (
-                          ""
-                        )}
-                      </DialogTrigger>
-                      <DialogContent className="sm:max-w-[460px]">
-                        <DialogHeader>
-                          <DialogTitle>获取推流码</DialogTitle>
-                          <DialogDescription className="mt-4">
-                            请填入您的设备ID
-                            <div>
-                              （打开抖音APP - 设置 - 滑动到最底部连续点击抖音
-                              version字样 -
-                              复制DeviceId（安卓）或DID（IOS）即为设备ID）
-                            </div>
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="device_id" className="text-right">
-                              设备Id：
-                            </Label>
-                            <Input
-                              id="device_id"
-                              onChange={(e) => {
-                                setDeviceId(e.target.value);
+                        <DialogTrigger asChild>
+                          {item.nickname && !item.rtmp_push_url ? (
+                            <Button
+                              variant="outline"
+                              onClick={() => {
+                                setCurrentItem(item);
                               }}
-                              className="col-span-3"
-                            />
+                            >
+                              获取推流码
+                            </Button>
+                          ) : (
+                            ""
+                          )}
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[460px]">
+                          <DialogHeader>
+                            <DialogTitle>获取推流码</DialogTitle>
+                            <DialogDescription className="mt-4">
+                              请填入您的设备ID
+                              <div>
+                                （打开抖音APP - 设置 - 滑动到最底部连续点击抖音
+                                version字样 -
+                                复制DeviceId（安卓）或DID（IOS）即为设备ID）
+                              </div>
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label htmlFor="device_id" className="text-right">
+                                设备Id：
+                              </Label>
+                              <Input
+                                id="device_id"
+                                onChange={(e) => {
+                                  setDeviceId(e.target.value);
+                                }}
+                                className="col-span-3"
+                              />
+                            </div>
                           </div>
-                        </div>
-                        <DialogFooter>
-                          <Button
-                            type="submit"
-                            disabled={fetchLoading}
-                            onClick={() =>
-                              setSelectedItem({
-                                action: "getStreamUrl",
-                                item: currentItem,
-                              })
-                            }
-                          >
-                            {fetchLoading && (
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            )}
-                            确定
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
+                          <DialogFooter>
+                            <Button
+                              type="submit"
+                              disabled={fetchLoading}
+                              onClick={() =>
+                                setSelectedItem({
+                                  action: "getStreamUrl",
+                                  item: currentItem,
+                                })
+                              }
+                            >
+                              {fetchLoading && (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              )}
+                              确定
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
 
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        {item.rtmp_push_url ? (
-                          <Button
-                            onClick={() => {
-                              setCurrentItem(item);
-                            }}
-                            disabled={fetchLoading}
-                          >
-                            {fetchLoading && (
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            )}
-                            释放通道
-                          </Button>
-                        ) : (
-                          ""
-                        )}
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>确认释放通道</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            确定要释放通道{item.nickname}吗?
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>取消</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => {
-                              setSelectedItem({
-                                action: "offline",
-                                item: currentItem,
-                              });
-                            }}
-                          >
-                            确认
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          {item.rtmp_push_url ? (
+                            <Button
+                              onClick={() => {
+                                setCurrentItem(item);
+                              }}
+                              disabled={fetchLoading}
+                            >
+                              {fetchLoading && (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              )}
+                              释放通道
+                            </Button>
+                          ) : (
+                            ""
+                          )}
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>确认释放通道</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              确定要释放通道{item.nickname}吗?
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>取消</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => {
+                                setSelectedItem({
+                                  action: "offline",
+                                  item: currentItem,
+                                });
+                              }}
+                            >
+                              确认
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
 
-                    {/* {item.all_cookies ? (
+                      {/* {item.all_cookies ? (
                       <Button
                         onClick={() => handleOpenShop(item)}
                         disabled={fetchLoading}
@@ -486,11 +496,11 @@ const TableComponent: React.FC = () => {
                     ) : (
                       ""
                     )} */}
-                  </div>
-                </TableCell>
-              </TableRow>
-            );
-          })}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
         </TableBody>
       </Table>
       {tunnelList.length && (

@@ -7,7 +7,7 @@ import { createMainWindow } from "./windows/mainWindow";
 import { registerMainIpcHandlers } from "./ipcHandlers/main";
 import { registerDouyinIpcHandlers } from "./ipcHandlers/douyin";
 import { registerTiktokIpcHandlers } from "./ipcHandlers/tiktok";
-import { registerCollectionIpcHandlers } from "./ipcHandlers/collection";
+import { registerCollectionIpcHandlers } from "./ipcHandlers/newCollection";
 
 // const require = createRequire(import.meta.url);
 // const __filename = fileURLToPath(import.meta.url);

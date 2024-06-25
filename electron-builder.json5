@@ -7,12 +7,18 @@
   directories: {
     output: "release/${version}",
   },
-  files: ["dist-electron", "dist"],
+  files: ["dist-electron", "dist", "chrome"],
   mac: {
     target: [
       {
         target: "dmg",
         arch: ["arm64", "x64"],
+      },
+    ],
+    extraFiles: [
+      {
+        from: "chrome/mac",
+        to: "Resources/chrome/mac",
       },
     ],
   },
@@ -21,6 +27,12 @@
       {
         target: "zip",
         arch: ["x64"],
+      },
+    ],
+    extraFiles: [
+      {
+        from: "chrome/win",
+        to: "chrome/win",
       },
     ],
     // "target": "zip",

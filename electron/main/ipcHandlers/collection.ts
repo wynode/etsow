@@ -1,8 +1,47 @@
-import { ipcMain, dialog } from "electron";
+import { ipcMain, dialog, app } from "electron";
 import fs from "fs";
-// import path from "path";
+import path from "path";
+import os from "os";
 import puppeteer, { Browser, Page } from "puppeteer";
+import { cookies } from "./contants";
+// const path = require('path');
+// const os = require('os');
 
+// 获取应用程序的根目录
+// const appPath = app.getAppPath();
+// path.resolve(__dirname, '..', '..');
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const appPath = path.join(__dirname, "../..");
+const windowsPath = path.join(__dirname, "../../../../");
+
+// 根据操作系统确定Chrome可执行文件的路径
+let chromePath: string;
+switch (os.platform()) {
+  case "win32":
+    chromePath = path.join(windowsPath, "chrome", "win", "chrome.exe");
+    break;
+  case "darwin":
+    chromePath = path.join(
+      appPath,
+      "chrome",
+      "mac",
+      "Chromium.app",
+      "Contents",
+      "MacOS",
+      "Chromium"
+    );
+    break;
+  case "linux":
+    chromePath = path.join(appPath, "chrome", "linux", "chrome");
+    break;
+  default:
+    chromePath = path.join(windowsPath, "chrome", "win", "chrome.exe");
+    break;
+}
 interface FollowerData {
   username: string;
   followers: string[];
@@ -14,6 +53,7 @@ async function scrapeFollowers(
   onProgress: (followers: string[]) => void,
   shouldStop: () => boolean
 ): Promise<string[]> {
+  console.log(all_cookies);
   // const isProd = process.env.NODE_ENV === "production";
   // const executablePath = isProd
   //   ? path.join(
@@ -24,7 +64,8 @@ async function scrapeFollowers(
   //   : puppeteer.executablePath();
   const browser = await puppeteer.launch({
     headless: true,
-    ignoreDefaultArgs: ['--disable-extensions'],
+    executablePath: chromePath,
+    ignoreDefaultArgs: ["--disable-extensions"],
     args: [
       "--window-size=1920,1080",
       "--disable-blink-features=AutomationControlled",
@@ -121,13 +162,16 @@ export function registerCollectionIpcHandlers(win: Electron.BrowserWindow) {
 
   ipcMain.handle(
     "scrape-followers",
-    async (
-      event,
-      fileContent: string,
-      outputDir: string,
-      all_cookies: string
-    ) => {
+    async (event, fileContent: string, all_cookies: string) => {
       try {
+        // win.webContents.send("scraped-followers", {
+        //   __filename,
+        //   __dirname,
+        //   appPath,
+        //   chromePath,
+        //   windowsPath,
+        //   getAppPath: app.getAppPath(),
+        // });
         const usernames = fileContent.split("\n").filter(Boolean);
         let followersData: FollowerData[] = [];
 
@@ -139,7 +183,7 @@ export function registerCollectionIpcHandlers(win: Electron.BrowserWindow) {
           console.log(`Scraping followers for ${username}...`);
           const followers = await scrapeFollowers(
             username,
-            all_cookies,
+            cookies,
             (progress) => {
               const existingData = followersData.find(
                 (data) => data.username === username

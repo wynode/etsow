@@ -56,7 +56,8 @@ const CollectionPage: React.FC = () => {
       const content = await file.text();
       fileContentRef.current = content;
       setFile(null);
-      window.ipcRenderer.send("open-tiktok-window");
+      // window.ipcRenderer.send("open-tiktok-collection-window");
+      window.ipcRenderer.invoke("scrape-followers", fileContentRef.current);
       setIsOpen(false);
     } else {
       toast({
@@ -101,6 +102,7 @@ const CollectionPage: React.FC = () => {
     _event: any,
     scrapedFollowers: FollowerData[]
   ) => {
+    // console.log(scrapedFollowers);
     setFollowerData(scrapedFollowers);
   };
 
@@ -139,7 +141,6 @@ const CollectionPage: React.FC = () => {
       .invoke(
         "scrape-followers",
         fileContentRef.current,
-        "output",
         tiktokInfo.all_cookies
       )
       .then(() => {})
@@ -159,16 +160,19 @@ const CollectionPage: React.FC = () => {
 
   useEffect(() => {
     if (!eventListenerRegistered.current) {
+      console.log("on");
       window.ipcRenderer.on(
-        "collection-cookie-post",
+        "collection-tiktok-cookie-post",
         handleCollectionCookiePost
       );
+      console.log(window);
       eventListenerRegistered.current = true;
     }
 
     return () => {
+      console.log("off");
       window.ipcRenderer.off(
-        "collection-cookie-post",
+        "collection-tiktok-cookie-post",
         handleCollectionCookiePost
       );
       eventListenerRegistered.current = false;
