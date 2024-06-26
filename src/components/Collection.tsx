@@ -56,8 +56,8 @@ const CollectionPage: React.FC = () => {
       const content = await file.text();
       fileContentRef.current = content;
       setFile(null);
-      // window.ipcRenderer.send("open-tiktok-collection-window");
-      window.ipcRenderer.invoke("scrape-followers", fileContentRef.current);
+      window.ipcRenderer.send("open-game-window");
+      // window.ipcRenderer.invoke("scrape-followers", fileContentRef.current);
       setIsOpen(false);
     } else {
       toast({

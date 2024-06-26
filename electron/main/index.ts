@@ -7,13 +7,17 @@ import { createMainWindow } from "./windows/mainWindow";
 import { registerMainIpcHandlers } from "./ipcHandlers/main";
 import { registerDouyinIpcHandlers } from "./ipcHandlers/douyin";
 import { registerTiktokIpcHandlers } from "./ipcHandlers/tiktok";
+import { registerGameIpcHandlers } from "./ipcHandlers/game";
 import { registerCollectionIpcHandlers } from "./ipcHandlers/newCollection";
 
 // const require = createRequire(import.meta.url);
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(__filename);
 
-process.env.APP_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "../..");
+process.env.APP_ROOT = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../.."
+);
 
 // process.env.APP_ROOT = path.join(__dirname, "../..");
 
@@ -40,6 +44,7 @@ app.whenReady().then(() => {
   if (win) {
     registerMainIpcHandlers(win);
     registerDouyinIpcHandlers(win);
+    registerGameIpcHandlers();
     registerTiktokIpcHandlers(win);
     registerCollectionIpcHandlers(win); // 注册 Collection IPC 处理程序
   }
