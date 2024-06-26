@@ -75,6 +75,10 @@ export default function UpdateLog() {
               <div className="ml-4">
                 <p>1、添加粉丝采集功能</p>
               </div>
+              <p className="mt-4">版本号 1.1.5 : </p>
+              <div className="ml-4">
+                <p>1、添加探行游戏功能</p>
+              </div>
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>

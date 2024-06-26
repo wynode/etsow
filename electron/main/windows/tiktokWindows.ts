@@ -90,7 +90,7 @@ export function createCollectionLoginWindow(parent: BrowserWindow): BrowserWindo
               loggedIn = true;
               setTimeout(() => {
                 const username = document.querySelector('a[data-e2e="nav-profile"]').getAttribute('href').slice(2);
-                window.ipcRenderer.send('save-tiktok-cookies');
+                window.ipcRenderer.send('save-collection-tiktok-cookies');
               }, 1000);
             }
           }

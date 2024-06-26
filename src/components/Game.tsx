@@ -27,7 +27,7 @@ export default function UpdateLog() {
       toast({
         variant: "destructive",
         title: "系统不支持",
-        description: "当前系统不支持启动探行游戏",
+        description: "当前系统为Mac，不支持启动探行游戏",
       });
     } else {
       console.log("当前操作系统是其他类型");
@@ -90,27 +90,27 @@ export default function UpdateLog() {
                         <div className="text-sm font-medium lowercase md:text-lg">xxxx</div>
                       </div> */}
 
-                      <div className="bg-slate-800 text-white">
-                        <div className="flex justify-between">
+                      <div className="bg-slate-800 text-white p-4">
+                        <div className="flex justify-between items-center">
                           <div className="text-xl">Free免费</div>
                           <div className="text-sm">主播</div>
                         </div>
-                        <div className="text-sm text-gray-400">
+                        <div className="text-sm text-gray-400 mt-4">
                           主播合作，盒子内所有游戏无押金，无开卡费用，预充值抽取礼物流水10%
                         </div>
-                        <div className="w-full h-1 bg-gray-100"></div>
-                        <div>
+                        <div className="w-full h-[1px] bg-gray-100 my-4"></div>
+                        <div className="p-2 text-gray-200">
                           <div>
-                            <span>☑️</span>无需注册，一键开播
+                            <span className="my-4 mx-2">☑️</span>无需注册，一键开播
                           </div>
                           <div>
-                            <span>☑️</span>内置TkTok资源
+                            <span className="my-4 mx-2">☑️</span>内置TkTok资源
                           </div>
                           <div>
-                            <span>☑️</span>内置TkTok直播教科
+                            <span className="my-4 mx-2">☑️</span>内置TkTok直播教科
                           </div>
                           <div>
-                            <span>☑️</span>精品游戏持续更亲
+                            <span className="my-4 mx-2">☑️</span>精品游戏持续更亲
                           </div>
                         </div>
                       </div>

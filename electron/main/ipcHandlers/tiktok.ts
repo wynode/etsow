@@ -44,7 +44,7 @@ export function registerTiktokIpcHandlers(win: BrowserWindow) {
     }
   });
 
-  ipcMain.on("save-tiktok-cookies", async (event) => {
+  ipcMain.on("save-collection-tiktok-cookies", async (event) => {
     try {
       const cookies =
         (await tiktokCollectionLoginWindow?.webContents.session.cookies.get({

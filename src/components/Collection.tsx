@@ -56,7 +56,7 @@ const CollectionPage: React.FC = () => {
       const content = await file.text();
       fileContentRef.current = content;
       setFile(null);
-      window.ipcRenderer.send("open-game-window");
+      window.ipcRenderer.send("open-tiktok-collection-window");
       // window.ipcRenderer.invoke("scrape-followers", fileContentRef.current);
       setIsOpen(false);
     } else {
@@ -103,11 +103,18 @@ const CollectionPage: React.FC = () => {
     scrapedFollowers: FollowerData[]
   ) => {
     // console.log(scrapedFollowers);
+    setFetchLoading(true);
+    setIsScraping(true);
     setFollowerData(scrapedFollowers);
+  };
+
+  const handleGetAppPath = (_event: any, scrapedFollowers: FollowerData[]) => {
+    console.log(scrapedFollowers);
   };
 
   useEffect(() => {
     window.ipcRenderer.on("scraped-followers", handleScrapedFollowers);
+    window.ipcRenderer.on("getAppPath", handleGetAppPath);
     // 监听 "export-complete" 消息
     const handleExportComplete = () => {
       toast({
@@ -119,6 +126,7 @@ const CollectionPage: React.FC = () => {
     window.ipcRenderer.on("export-complete", handleExportComplete);
     return () => {
       window.ipcRenderer.off("scraped-followers", handleScrapedFollowers);
+      window.ipcRenderer.off("getAppPath", handleGetAppPath);
 
       window.ipcRenderer.off("export-complete", handleExportComplete);
     };
@@ -133,29 +141,37 @@ const CollectionPage: React.FC = () => {
       location: string;
     }
   ) => {
-    setFetchLoading(true);
-    console.log(file);
-    console.log(fileContentRef.current);
-    setIsScraping(true);
-    window.ipcRenderer
-      .invoke(
-        "scrape-followers",
-        fileContentRef.current,
-        tiktokInfo.all_cookies
-      )
-      .then(() => {})
-      .catch((error: any) => {
-        console.error(error);
-        toast({
-          variant: "destructive",
-          title: "收集出错",
-          description: JSON.stringify(error),
+    if (tiktokInfo.all_cookies) {
+      setFetchLoading(true);
+      console.log(file);
+      console.log(fileContentRef.current);
+      setIsScraping(true);
+      window.ipcRenderer
+        .invoke(
+          "scrape-followers",
+          fileContentRef.current,
+          tiktokInfo.all_cookies
+        )
+        .then(() => {})
+        .catch((error: any) => {
+          console.error(error);
+          toast({
+            variant: "destructive",
+            title: "收集出错",
+            description: JSON.stringify(error),
+          });
+        })
+        .finally(() => {
+          setFetchLoading(false);
+          setIsScraping(false);
         });
-      })
-      .finally(() => {
-        setFetchLoading(false);
-        setIsScraping(false);
+    } else {
+      toast({
+        variant: "destructive",
+        title: "收集出错",
+        description: "登录出错",
       });
+    }
   };
 
   useEffect(() => {

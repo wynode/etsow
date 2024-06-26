@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 import puppeteer, { Browser, Page } from "puppeteer";
-import { cookies } from "./contants";
+// import { cookies } from "./contants";
 // const path = require('path');
 // const os = require('os');
 
@@ -17,6 +17,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const appPath = path.join(__dirname, "../..");
 const windowsPath = path.join(__dirname, "../../../../");
+const getAppPath = app.getAppPath();
+const macPath = path.join(getAppPath, "..");
 
 // 根据操作系统确定Chrome可执行文件的路径
 let chromePath: string;
@@ -26,7 +28,7 @@ switch (os.platform()) {
     break;
   case "darwin":
     chromePath = path.join(
-      appPath,
+      macPath,
       "chrome",
       "mac",
       "Chromium.app",
@@ -53,7 +55,6 @@ async function scrapeFollowers(
   onProgress: (followers: string[]) => void,
   shouldStop: () => boolean
 ): Promise<string[]> {
-  console.log(all_cookies);
   // const isProd = process.env.NODE_ENV === "production";
   // const executablePath = isProd
   //   ? path.join(
@@ -83,6 +84,10 @@ async function scrapeFollowers(
     const cookies = JSON.parse(all_cookies || "{}");
     await page.setCookie(...cookies);
     await page.goto(`https://www.tiktok.com/@${username}`, { timeout: 60000 });
+    await page.waitForSelector('span[data-e2e="followers"]', {
+      visible: true,
+      timeout: 30000,
+    });
     await page.click('span[data-e2e="followers"]');
     await new Promise((resolve) => setTimeout(resolve, 2000)); // 等待弹窗完全加载
     await page.waitForSelector('div[class*="DivUserListContainer"]', {
@@ -164,13 +169,14 @@ export function registerCollectionIpcHandlers(win: Electron.BrowserWindow) {
     "scrape-followers",
     async (event, fileContent: string, all_cookies: string) => {
       try {
-        // win.webContents.send("scraped-followers", {
+        // win.webContents.send("getAppPath", {
         //   __filename,
         //   __dirname,
         //   appPath,
         //   chromePath,
         //   windowsPath,
         //   getAppPath: app.getAppPath(),
+        //   macPath,
         // });
         const usernames = fileContent.split("\n").filter(Boolean);
         let followersData: FollowerData[] = [];
@@ -183,7 +189,7 @@ export function registerCollectionIpcHandlers(win: Electron.BrowserWindow) {
           console.log(`Scraping followers for ${username}...`);
           const followers = await scrapeFollowers(
             username,
-            cookies,
+            all_cookies,
             (progress) => {
               const existingData = followersData.find(
                 (data) => data.username === username
