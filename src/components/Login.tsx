@@ -25,6 +25,8 @@ const LoginRegister: React.FC<LoginRegisterProps> = ({ onLoginSuccess }) => {
       try {
         const data = await login({ username, password });
         localStorage.setItem("token", data.token);
+        localStorage.setItem("game_username", data.game_username);
+        localStorage.setItem("game_platform_password", data.game_platform_password);
         localStorage.setItem("userName", username);
         console.log("登录成功");
         onLoginSuccess(username); // 调用登录成功后的回调函数

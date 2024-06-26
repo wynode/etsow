@@ -56,6 +56,8 @@ declare global {
   interface LoginParams {
     username: string;
     password: string;
+    game_username?: string;
+    game_platform_password?: string;
   }
 
   interface RegisterParams {
@@ -70,6 +72,8 @@ declare global {
 
   interface LoginResponse {
     token: string;
+    game_username: string;
+    game_platform_password: string;
   }
 }
 
