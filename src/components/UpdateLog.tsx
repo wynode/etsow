@@ -71,13 +71,18 @@ export default function UpdateLog() {
                 <p>1、添加步骤说明</p>
                 <p>2、修复英文版不能登录问题</p>
               </div>
-              <p className="mt-4">版本号 1.1.4 : </p>
+              {/* <p className="mt-4">版本号 1.1.4 : </p>
               <div className="ml-4">
                 <p>1、添加粉丝采集功能</p>
-              </div>
-              <p className="mt-4">版本号 1.1.5 : </p>
+              </div> */}
+              <p className="mt-4">版本号 2.0.0 : </p>
               <div className="ml-4">
                 <p>1、添加探行游戏功能</p>
+              </div>
+              <p className="mt-4">版本号 2.0.1 : </p>
+              <div className="ml-4">
+                <p>1、修改部分样式</p>
+                <p>2、添加OBS下载</p>
               </div>
             </div>
           </AlertDialogDescription>

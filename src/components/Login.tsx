@@ -32,7 +32,7 @@ const LoginRegister: React.FC<LoginRegisterProps> = ({ onLoginSuccess }) => {
         onLoginSuccess(username); // 调用登录成功后的回调函数
       } catch (error) {
         console.error("登录失败:", error);
-        setLoginError("登录失败，请确认用户名和密码");
+        setLoginError(`登录失败，${JSON.stringify(error)}`, );
         // 登录失败的错误处理
       } finally {
         setSubmitLoading(false);

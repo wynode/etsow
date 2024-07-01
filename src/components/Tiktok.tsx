@@ -115,8 +115,7 @@ const steps = [
   },
   {
     title: "直播手机被动断网",
-    description:
-      "请通过拔网线、关路由、断热点等方式被动让直播手机断网",
+    description: "请通过拔网线、关路由、断热点等方式被动让直播手机断网",
   },
 ];
 
@@ -270,9 +269,13 @@ const TableComponent: React.FC = () => {
   }, [selectedItem]);
 
   useEffect(() => {
-    window.ipcRenderer.on("tiktok-cookie-post", handleTiktokCookiePost);
+    if (!selectedItemRef.current.action) {
+      window.ipcRenderer.on("tiktok-cookie-post", handleTiktokCookiePost);
+    }
     return () => {
-      window.ipcRenderer.off("tiktok-cookie-post", handleTiktokCookiePost);
+      if (selectedItemRef.current.action) {
+        window.ipcRenderer.off("tiktok-cookie-post", handleTiktokCookiePost);
+      }
     };
   }, []);
 
@@ -495,7 +498,7 @@ const TableComponent: React.FC = () => {
           })}
         </TableBody>
       </Table>
-      {tunnelList.length && (
+      {tunnelList.length ? (
         <Pagination className="mt-10">
           <PaginationContent>
             <PaginationPrevious
@@ -526,9 +529,11 @@ const TableComponent: React.FC = () => {
             />
           </PaginationContent>
         </Pagination>
+      ) : (
+        ""
       )}
 
-      <div className="flex justify-center mt-10 text-gray-500">
+      <div className="flex justify-center my-10 text-gray-700 text-xl font-bold">
         {tunnelList.length ? (
           <div>TikTok通道不够？联系管理员可开通更多通道哦～ </div>
         ) : (

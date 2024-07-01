@@ -112,23 +112,28 @@ const CollectionPage: React.FC = () => {
     console.log(scrapedFollowers);
   };
 
+  // 监听 "export-complete" 消息
+  const handleExportComplete = () => {
+    toast({
+      title: "导出结果",
+      description: `导出成功，请到选择导出的文件夹中查看`,
+    });
+  };
+
   useEffect(() => {
-    window.ipcRenderer.on("scraped-followers", handleScrapedFollowers);
-    window.ipcRenderer.on("getAppPath", handleGetAppPath);
-    // 监听 "export-complete" 消息
-    const handleExportComplete = () => {
-      toast({
-        title: "导出结果",
-        description: `导出成功，请到选择导出的文件夹中查看`,
-      });
-    };
+    if (!eventListenerRegistered.current) {
+      window.ipcRenderer.on("scraped-followers", handleScrapedFollowers);
+      window.ipcRenderer.on("getAppPath", handleGetAppPath);
+      window.ipcRenderer.on("export-complete", handleExportComplete);
+      eventListenerRegistered.current = true;
+    }
 
-    window.ipcRenderer.on("export-complete", handleExportComplete);
     return () => {
-      window.ipcRenderer.off("scraped-followers", handleScrapedFollowers);
-      window.ipcRenderer.off("getAppPath", handleGetAppPath);
-
-      window.ipcRenderer.off("export-complete", handleExportComplete);
+      if (eventListenerRegistered.current) {
+        window.ipcRenderer.off("scraped-followers", handleScrapedFollowers);
+        window.ipcRenderer.off("getAppPath", handleGetAppPath);
+        window.ipcRenderer.off("export-complete", handleExportComplete);
+      }
     };
   }, []);
 

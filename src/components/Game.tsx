@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import GameMain from "@/assets/game-main.png";
-import GameBottom from "@/assets/game-bottom.jpg";
+// import GameMain from "@/assets/game-main.png";
+import GameBottom from "@/assets/game-b.jpg";
 
 import { useToast } from "@/components/ui/use-toast";
 
@@ -13,6 +13,7 @@ export default function UpdateLog() {
       //     "game_username": "tx_admin",
       // "game_platform_password": "",
       console.log("当前操作系统是 Windows");
+
       const name = localStorage.getItem("game_username");
       const password = localStorage.getItem("game_platform_password");
       if (!name || !password) {
@@ -21,7 +22,9 @@ export default function UpdateLog() {
           title: "需重新登录",
           description: "请于右上角退出并重新登录一次，以注册游戏内部账号",
         });
+        return;
       }
+      window.ipcRenderer.send("open-game-window", { name, password });
     } else if (platform === "darwin") {
       console.log("当前操作系统是 macOS");
       toast({
@@ -58,7 +61,7 @@ export default function UpdateLog() {
                 <div className="flex flex-col gap-x-5 p-2 transition hover:bg-gray-50/50 xl:flex-row 0">
                   <div className="w-full xl:w-9/12">
                     <div className="w-full overflow-hidden rounded-[3px] bg-gray-50 relative aspect-[16/9]">
-                      <img
+                      {/* <img
                         alt="xxx"
                         loading="lazy"
                         width="3500"
@@ -69,7 +72,12 @@ export default function UpdateLog() {
                         style={{ color: "transparent" }}
                         sizes="100vw"
                         src={GameMain}
-                      />
+                      /> */}
+                      <iframe
+                        src="https://player.bilibili.com/player.html?isOutside=true&aid=112687258275162&bvid=BV1YS3yeqErD&cid=500001597627240&p=1"
+                        scrolling="no"
+                        className="absolute h-full w-full"
+                      ></iframe>
                     </div>
                   </div>
                   <div className="flex xl:w-1/4">
@@ -101,16 +109,19 @@ export default function UpdateLog() {
                         <div className="w-full h-[1px] bg-gray-100 my-4"></div>
                         <div className="p-2 text-gray-200">
                           <div>
-                            <span className="my-4 mx-2">☑️</span>无需注册，一键开播
+                            <span className="my-4 mx-2">☑️</span>
+                            无需注册，一键开播
                           </div>
                           <div>
                             <span className="my-4 mx-2">☑️</span>内置TkTok资源
                           </div>
                           <div>
-                            <span className="my-4 mx-2">☑️</span>内置TkTok直播教科
+                            <span className="my-4 mx-2">☑️</span>
+                            内置TkTok直播教科
                           </div>
                           <div>
-                            <span className="my-4 mx-2">☑️</span>精品游戏持续更亲
+                            <span className="my-4 mx-2">☑️</span>
+                            精品游戏持续更亲
                           </div>
                         </div>
                       </div>
@@ -125,7 +136,7 @@ export default function UpdateLog() {
             <p className="text-md md:text-xl">Etsow</p>
           </footer>
           <div className="flex justify-center border-t border-gray-100 bg-gray-50/50">
-            <div className="mb-4 mt-20 grid max-w-screen-2xl grid-cols-1 gap-y-20 md:grid-cols-2 md:gap-x-16 md:gap-y-32 lg:gap-x-32">
+            <div className="pl-[134px] pr-[80px] mb-4 mt-20 grid max-w-screen-2xl grid-cols-1 gap-y-20 md:grid-cols-2 md:gap-x-16 md:gap-y-32 lg:gap-x-32">
               <div className="self-center">
                 <img
                   alt="An illustration of a browser window, a terminal window, the Sanity.io logo and the NextJS logo"

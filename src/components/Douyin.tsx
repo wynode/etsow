@@ -261,9 +261,13 @@ const TableComponent: React.FC = () => {
   }, [selectedItem]);
 
   useEffect(() => {
-    window.ipcRenderer.on("douyin-cookie-post", handleDouyinCookiePost);
+    if (!selectedItemRef.current.action) {
+      window.ipcRenderer.on("douyin-cookie-post", handleDouyinCookiePost);
+    }
     return () => {
-      window.ipcRenderer.off("douyin-cookie-post", handleDouyinCookiePost);
+      if (selectedItemRef.current.action) {
+        window.ipcRenderer.off("douyin-cookie-post", handleDouyinCookiePost);
+      }
     };
   }, []);
 
@@ -503,7 +507,7 @@ const TableComponent: React.FC = () => {
             })}
         </TableBody>
       </Table>
-      {tunnelList.length && (
+      {tunnelList.length ? (
         <Pagination className="mt-10">
           <PaginationContent>
             <PaginationPrevious
@@ -534,9 +538,9 @@ const TableComponent: React.FC = () => {
             />
           </PaginationContent>
         </Pagination>
-      )}
+      ) : ''}
 
-      <div className="flex justify-center mt-10 text-gray-500">
+      <div className="flex justify-center my-10 text-gray-700 text-xl font-bold">
         {tunnelList.length ? (
           <div>抖音通道不够？联系管理员可开通更多通道哦～ </div>
         ) : (

@@ -9,23 +9,32 @@ async function request(path: string, options: RequestInit = {}) {
     headers.set("Authorization", `JWT ${token}`); // 设置 Authorization 请求头
   }
 
-  const response = await fetch(`${BASE_URL}${path}`, {
-    ...options,
-    headers,
-  });
+  try {
+    const response = await fetch(`${BASE_URL}${path}`, {
+      ...options,
+      headers,
+    });
 
-  if (!response.ok) {
-    if (response.status === 401 || response.status === 403) {
-      localStorage.setItem("token", "");
-      throw new Error("Token过期，请重新登录");
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        localStorage.setItem("token", "");
+        throw new Error("Token过期，请重新登录");
+      }
+      const error = await response.json();
+      return new Promise((res, rej) => {
+        rej(error);
+      });
     }
-    const error = await response.json();
+
+    return response.json();
+  } catch (error) {
+    console.dir(error)
     return new Promise((res, rej) => {
-      rej(error);
+      rej(`请检查您的vpn是否为海外站点或更换节点，${error}`);
     });
   }
 
-  return response.json();
+  // return response.json();
 }
 
 export async function LoginTunnel(
@@ -73,7 +82,7 @@ export async function postCookies(
 }
 
 export async function getTunnelList(page: number, per_page: number) {
-  return request(`/tunnel/?page=${page}&page_size=${per_page}&vs=zx-1.1.5`, {
+  return request(`/tunnel/?page=${page}&page_size=${per_page}&vs=zx-2.0.1`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -102,7 +111,7 @@ export async function offlineUser(id: number) {
 
 export async function getDouyinTunnelList(page: number, per_page: number) {
   return request(
-    `/tunnel/get_douyin_tunnel/?page=${page}&page_size=${per_page}&vs=zx-1.1.5`,
+    `/tunnel/get_douyin_tunnel/?page=${page}&page_size=${per_page}&vs=zx-2.0.1`,
     {
       method: "GET",
       headers: {

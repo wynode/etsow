@@ -15,12 +15,12 @@
         arch: ["arm64", "x64"],
       },
     ],
-    extraFiles: [
-      {
-        from: "chrome/mac",
-        to: "Resources/chrome/mac",
-      },
-    ],
+    // extraFiles: [
+    //   {
+    //     from: "chrome/mac",
+    //     to: "Resources/chrome/mac",
+    //   },
+    // ],
   },
   win: {
     target: [
@@ -30,9 +30,13 @@
       },
     ],
     extraFiles: [
+      // {
+      //   from: "chrome/win",
+      //   to: "chrome/win",
+      // },
       {
-        from: "chrome/win",
-        to: "chrome/win",
+        from: "hooyoo-electron",
+        to: "hooyoo-electron",
       },
     ],
     // "target": "zip",

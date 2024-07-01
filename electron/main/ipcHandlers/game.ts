@@ -9,10 +9,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 function openAnotherElectronApp(username: string, password: string): void {
-  const windowsPath = path.join(__dirname, "../../");
+  const windowsPath = path.join(__dirname, "../../../../");
   const chromePath = path.join(
     windowsPath,
-    "chrome",
     "hooyoo-electron",
     "hooyoo-electron.exe"
   );
@@ -35,7 +34,7 @@ function openAnotherElectronApp(username: string, password: string): void {
 }
 
 export function registerGameIpcHandlers() {
-  ipcMain.on("open-game-window", () => {
-    openAnotherElectronApp("test110test110", "test110test110");
+  ipcMain.on("open-game-window", (e, { name, password}) => {
+    openAnotherElectronApp(name, password);
   });
 }
