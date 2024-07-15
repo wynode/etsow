@@ -167,7 +167,12 @@ export function registerCollectionIpcHandlers(win: Electron.BrowserWindow) {
 
   ipcMain.handle(
     "scrape-followers",
-    async (event, fileContent: string, all_cookies: string) => {
+    async (
+      event,
+      fileContent: string,
+      all_cookies: string,
+      gather_count: number
+    ) => {
       try {
         // win.webContents.send("getAppPath", {
         //   __filename,
@@ -178,6 +183,7 @@ export function registerCollectionIpcHandlers(win: Electron.BrowserWindow) {
         //   getAppPath: app.getAppPath(),
         //   macPath,
         // });
+        console.log(fileContent, gather_count, all_cookies.slice(0, 100));
         const usernames = fileContent.split("\n").filter(Boolean);
         let followersData: FollowerData[] = [];
 
@@ -206,10 +212,15 @@ export function registerCollectionIpcHandlers(win: Electron.BrowserWindow) {
                   { username, followers: progress },
                 ];
               }
-              win.webContents.send("scraped-followers", followersData);
+              if (progress.length > gather_count) {
+                shouldStopScraping = true;
+              }
+              // win.webContents.send("scraped-followers", followersData);
             },
             () => shouldStopScraping
           );
+
+          win.webContents.send("scraped-followers-over", followersData);
 
           console.log(`Scraped ${followers.length} followers for ${username}.`);
         }

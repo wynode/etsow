@@ -28,9 +28,14 @@ async function request(path: string, options: RequestInit = {}) {
 
     return response.json();
   } catch (error) {
-    console.dir(error)
+    console.dir(error);
+    if (JSON.stringify(error).includes("Token过期，请重新登录")) {
+      return new Promise((res, rej) => {
+        rej(`${error}`);
+      });
+    }
     return new Promise((res, rej) => {
-      rej(`请检查您的vpn是否为海外站点或更换节点，${error}`);
+      rej(`当前电脑网络故障，请检查或更换网络。${error}`);
     });
   }
 
@@ -63,6 +68,14 @@ export async function getStreamCode(id: number) {
     },
   });
 }
+export async function getStreamCodeVirtual(id: number) {
+  return request(`/tunnel/${id}/get_virtual_tiktok_rtmp/`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+}
 
 export async function postCookies(
   id: number,
@@ -81,8 +94,25 @@ export async function postCookies(
   });
 }
 
+export async function postCookiesVirtual(
+  id: number,
+  item: {
+    nickname: string;
+    cookies: string;
+    location: string;
+  }
+) {
+  return request(`/tunnel/${id}/get_virtual_tiktok_rtmp/`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(item),
+  });
+}
+
 export async function getTunnelList(page: number, per_page: number) {
-  return request(`/tunnel/?page=${page}&page_size=${per_page}&vs=zx-2.0.1`, {
+  return request(`/tunnel/?page=${page}&page_size=${per_page}&vs=zx-2.0.5`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -109,9 +139,18 @@ export async function offlineUser(id: number) {
   });
 }
 
+export async function tiktokOfflineUser(id: number) {
+  return request(`/tunnel/${id}/finish_tiktok/`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+}
+
 export async function getDouyinTunnelList(page: number, per_page: number) {
   return request(
-    `/tunnel/get_douyin_tunnel/?page=${page}&page_size=${per_page}&vs=zx-2.0.1`,
+    `/tunnel/get_douyin_tunnel/?page=${page}&page_size=${per_page}&vs=zx-2.0.5`,
     {
       method: "GET",
       headers: {
@@ -119,6 +158,44 @@ export async function getDouyinTunnelList(page: number, per_page: number) {
       },
     }
   );
+}
+// ## 1. 获取当前用户的采集剩余数量
+export async function getUserGatherInfo(): Promise<UserGatherInfo> {
+  return request(`/gather/gather_info/my_info/`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+}
+// ## 1. 获取当前用户的采集记录
+export async function getUserGatherRecord() {
+  return request(`/gather/gather_record/my_info/`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+}
+
+export async function postUploadFile(formData: any) {
+  return await request("/gather/upload_file/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: formData,
+  });
+}
+
+export async function postUploadGatherRecord(params: any) {
+  return await request("/gather/gather_record/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(params),
+  });
 }
 
 export async function LoginDouyinTunnel(

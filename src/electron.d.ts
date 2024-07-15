@@ -33,6 +33,7 @@ declare global {
     status_cn: string;
     tunnel_type: string;
     remain_valid_days: string;
+    tunnel_perms: string[];
   }
   interface TableComponentProps {
     tableListData: TableItem[];
@@ -74,6 +75,39 @@ declare global {
     token: string;
     game_username: string;
     game_platform_password: string;
+  }
+
+  interface UserGatherInfo {
+    created_at: string;
+    id: number;
+    remaining_count: number;
+    remark: string;
+    staff: number;
+    staff_name: string;
+    status: string;
+    status_cn: string;
+    updated_at: string;
+  }
+
+  interface GatherRecord {
+    id: number;
+    staff: number;
+    staff_name: string;
+    gather: number;
+    gather_count: number;
+    file: string;
+    remark: string;
+    created_at: string;
+    updated_at: string;
+  }
+
+  interface UserGatherRecord {
+    count: number;
+    next: string | null;
+    page_size: number;
+    previous: string | null;
+    results: GatherRecord[];
+    total_page: number;
   }
 }
 

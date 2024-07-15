@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, CircleHelp } from "lucide-react";
 import { downloadUrl } from "@/config";
 import { useToast } from "@/components/ui/use-toast";
 import {
@@ -86,6 +86,7 @@ const initialTableItem: TableItem = {
   status_cn: "",
   tunnel_type: "",
   remain_valid_days: "",
+  tunnel_perms: [""],
 };
 
 const steps = [
@@ -111,7 +112,11 @@ const steps = [
   },
 ];
 
-const TableComponent: React.FC = () => {
+interface ContainerProps {
+  onCheck: (url: string) => void;
+}
+
+const TableComponent: React.FC<ContainerProps> = ({ onCheck }) => {
   const { activeStep } = useSteps({
     index: 0,
     count: steps.length,
@@ -213,6 +218,21 @@ const TableComponent: React.FC = () => {
     );
   };
 
+  const handleTitleClick = (title: string) => {
+    if (title.includes("设置OBS并开播")) {
+      // window.open(
+      //   "http://help.etsow.com/tiktokzhibohouOBStishiwufalianjiefuwuqiruhejiejue%EF%BC%9F.html"
+      // );
+      onCheck(
+        "http://help.etsow.com/qingquebaodouyinzhanghaoyijingkaiqizhibo.html"
+      );
+    } else if (title.includes("断网")) {
+      onCheck("http://help.etsow.com/OBStishiyizhizhonglian.html");
+      // window.open("http://help.etsow.com/OBStishiyizhizhonglian.html");
+    }
+    console.log(title);
+  };
+
   const handleDouyinCookiePost = async (
     event: any,
     douyinInfo: {
@@ -223,8 +243,8 @@ const TableComponent: React.FC = () => {
     }
   ) => {
     try {
-      if (!douyinInfo.nickname) {
-        throw new Error("未登录，请在弹出窗口中登录抖音");
+      if (!douyinInfo.all_cookies || !douyinInfo.nickname) {
+        throw new Error("未登录，请在弹出窗口中登录抖音（登录时请勿点击其他页面）");
       }
       if (selectedItemRef.current?.item?.id) {
         setFetchLoading(true);
@@ -244,6 +264,10 @@ const TableComponent: React.FC = () => {
     } finally {
       setFetchLoading(false);
     }
+  };
+
+  const handleGoClick = () => {
+    onCheck("http://help.etsow.com/douyinfuchijihua.html");
   };
 
   useEffect(() => {
@@ -365,6 +389,7 @@ const TableComponent: React.FC = () => {
                         ""
                       ) : (
                         <Button
+                          variant="outline"
                           onClick={() =>
                             setSelectedItem({
                               action: "login",
@@ -389,7 +414,6 @@ const TableComponent: React.FC = () => {
                         <DialogTrigger asChild>
                           {item.nickname && !item.rtmp_push_url ? (
                             <Button
-                              variant="outline"
                               onClick={() => {
                                 setCurrentItem(item);
                               }}
@@ -507,7 +531,15 @@ const TableComponent: React.FC = () => {
             })}
         </TableBody>
       </Table>
-      {tunnelList.length ? (
+      {tunnelList?.filter((item) => {
+        const remainingDays = item.expire_time
+          ? Math.ceil(
+              (new Date(item.expire_time).getTime() - new Date().getTime()) /
+                (1000 * 60 * 60 * 24)
+            )
+          : 0;
+        return remainingDays > 0;
+      }).length ? (
         <Pagination className="mt-10">
           <PaginationContent>
             <PaginationPrevious
@@ -538,14 +570,24 @@ const TableComponent: React.FC = () => {
             />
           </PaginationContent>
         </Pagination>
-      ) : ''}
+      ) : (
+        ""
+      )}
 
       <div className="flex justify-center my-10 text-gray-700 text-xl font-bold">
-        {tunnelList.length ? (
-          <div>抖音通道不够？联系管理员可开通更多通道哦～ </div>
+        {/* {tunnelList.length ? (
+          <div onClick={handleGoClick}>
+            探行宣布抖音推流码永久免费，请点击查看说明~{" "}
+          </div>
         ) : (
           <div>您还没有开通抖音通道，请联系管理员开启～ </div>
-        )}
+        )} */}
+        <div
+          onClick={handleGoClick}
+          className="cursor-pointer hover:text-gray-500"
+        >
+          探行宣布抖音推流码永久免费，请点击查看说明~{" "}
+        </div>
       </div>
 
       {tableLoading && (
@@ -567,7 +609,23 @@ const TableComponent: React.FC = () => {
               </StepIndicator>
 
               <Box flexShrink="0">
-                <StepTitle>{step.title}</StepTitle>
+                <StepTitle
+                  className={
+                    step.title.includes("OBS") || step.title.includes("断网")
+                      ? "cursor-pointer flex"
+                      : "flex"
+                  }
+                  onClick={() => {
+                    handleTitleClick(step.title);
+                  }}
+                >
+                  {step.title}{" "}
+                  {step.title.includes("OBS") || step.title.includes("断网") ? (
+                    <CircleHelp className="w-4 ml-1 mr-2"></CircleHelp>
+                  ) : (
+                    ""
+                  )}
+                </StepTitle>
                 <StepDescription className="w-[180px]">
                   {step.description}
                 </StepDescription>

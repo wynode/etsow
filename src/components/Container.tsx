@@ -5,10 +5,11 @@ import Tools from "@/components/Tools";
 import Info from "@/components/Info";
 import ContactUs from "@/components/ContactUs";
 import UpdateLog from "@/components/UpdateLog";
-// import Collection from "@/components/Collection";
+import Collection from "@/components/Collection";
 import Game from "@/components/Game";
+import Teach from "@/components/Teach";
 import Logo from "@/assets/logo.png";
-import Banner from "@/assets/banner.jpg";
+import Banner from "@/assets/bannernew.jpg";
 // import Banner2 from "@/assets/banner2.png";
 import Autoplay from "embla-carousel-autoplay";
 import { Badge } from "@/components/ui/badge";
@@ -40,13 +41,19 @@ const Container: React.FC<ContainerProps> = ({ onLoginOut, userName }) => {
     })
   );
 
+  const [teachURL, setTeachURL] = useState("http://help.etsow.com/");
+  const [tabsValue, setTabsValue] = useState("info");
+
   const handelBannerClick = () => {
-    window.open(
-      "https://console.etsow.com/live_tools/obs_download"
-    );
+    window.open("https://console.etsow.com/live_tools/obs_download");
   };
   const handelBanner2Click = () => {
     window.open("https://work.weixin.qq.com/ca/cawcde945a90447f0f");
+  };
+
+  const handleCheckTeachUrl = (url: string) => {
+    setTeachURL(url);
+    setTabsValue("teach");
   };
 
   return (
@@ -108,26 +115,47 @@ const Container: React.FC<ContainerProps> = ({ onLoginOut, userName }) => {
             </NavigationMenuList>
           </NavigationMenu>
         </div>
-        <Tabs defaultValue="info" className="w-full">
+        <Tabs
+          defaultValue="info"
+          className="w-full"
+          value={tabsValue}
+          onValueChange={(value) => setTabsValue(value)}
+        >
           <TabsList className="flex justify-center">
             <TabsTrigger value="info">数据统计</TabsTrigger>
-            <TabsTrigger value="douyin">抖音推流</TabsTrigger>
-            <TabsTrigger value="tiktok">Tiktok推流</TabsTrigger>
+            <TabsTrigger value="douyin">抖音直播</TabsTrigger>
+            <TabsTrigger value="tiktok">Tiktok直播</TabsTrigger>
+
+            <TabsTrigger value="collection">采集TikTok粉丝        <Badge
+                className="px-2 py-0 pb-[1px] ml-1 mb-1 bg-gray-300"
+                variant="outline"
+              >
+                beta
+              </Badge></TabsTrigger>
             <TabsTrigger value="game">
-              探行游戏<Badge className="px-2 py-0 pb-[1px] ml-1 mb-1" variant="destructive">new</Badge>
+              探行游戏
+              <Badge
+                className="px-2 py-0 pb-[1px] ml-1 mb-1"
+                variant="destructive"
+              >
+                new
+              </Badge>
             </TabsTrigger>
             <TabsTrigger value="tools">伙伴专区</TabsTrigger>
+            <TabsTrigger value="teach">教程中心</TabsTrigger>
             <TabsTrigger value="contact">联系我们</TabsTrigger>
-            {/* <TabsTrigger value="collection">采集TikTok粉丝</TabsTrigger> */}
           </TabsList>
           <TabsContent value="info">
             <Info></Info>
           </TabsContent>
           <TabsContent value="douyin">
-            <Douyin></Douyin>
+            <Douyin onCheck={handleCheckTeachUrl}></Douyin>
           </TabsContent>
           <TabsContent value="tiktok">
-            <Tiktok></Tiktok>
+            <Tiktok onCheck={handleCheckTeachUrl}></Tiktok>
+          </TabsContent>
+          <TabsContent value="collection">
+            <Collection></Collection>
           </TabsContent>
           <TabsContent value="game">
             <Game></Game>
@@ -135,12 +163,12 @@ const Container: React.FC<ContainerProps> = ({ onLoginOut, userName }) => {
           <TabsContent value="tools">
             <Tools></Tools>
           </TabsContent>
+          <TabsContent value="teach">
+            <Teach url={teachURL}></Teach>
+          </TabsContent>
           <TabsContent value="contact">
             <ContactUs></ContactUs>
           </TabsContent>
-          {/* <TabsContent value="collection">
-            <Collection></Collection>
-          </TabsContent> */}
         </Tabs>
       </div>
 

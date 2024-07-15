@@ -12,15 +12,19 @@
     target: [
       {
         target: "dmg",
-        arch: ["arm64", "x64"],
+        arch: ["x64", "arm64"],
+      },
+      {
+        target: "zip",
+        arch: ["x64", "arm64"],
       },
     ],
-    // extraFiles: [
-    //   {
-    //     from: "chrome/mac",
-    //     to: "Resources/chrome/mac",
-    //   },
-    // ],
+    extraFiles: [
+      {
+        from: "chrome/mac",
+        to: "Resources/chrome/mac",
+      },
+    ],
   },
   win: {
     target: [
@@ -30,10 +34,10 @@
       },
     ],
     extraFiles: [
-      // {
-      //   from: "chrome/win",
-      //   to: "chrome/win",
-      // },
+      {
+        from: "chrome/win",
+        to: "chrome/win",
+      },
       {
         from: "hooyoo-electron",
         to: "hooyoo-electron",
@@ -49,8 +53,8 @@
     deleteAppDataOnUninstall: false,
   },
   publish: {
-    provider: "generic",
-    channel: "latest",
-    url: "https://github.com/electron-vite/electron-vite-react/releases/download/v0.9.9/",
+    provider: "github",
+    owner: "wynode",
+    repo: "etsow",
   },
 }

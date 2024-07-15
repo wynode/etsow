@@ -59,7 +59,10 @@ export function registerTiktokIpcHandlers(win: BrowserWindow) {
         // cookies: formattedCookies,
         all_cookies: JSON.stringify(cookies),
       };
+      console.log("xxxxxx, 收集到了cookies", cookies[0]);
       win.webContents.send("collection-tiktok-cookie-post", tiktokInfo);
+
+      console.log("发送了哦", cookies[0]);
       tiktokCollectionLoginWindow?.destroy(); // 获取到 Cookies 后再关闭窗口
     } catch (error) {
       console.error("获取 Cookies 失败:", error);

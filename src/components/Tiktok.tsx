@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Divide, Loader2 } from "lucide-react";
+import { Divide, Loader2, CircleHelp } from "lucide-react";
 import { downloadUrl } from "@/config";
 import { useToast } from "@/components/ui/use-toast";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Step,
   StepDescription,
@@ -16,6 +17,17 @@ import {
   useSteps,
   Box,
 } from "@chakra-ui/react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Table,
   TableBody,
@@ -67,7 +79,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   getStreamCode,
+  getStreamCodeVirtual,
   offlineUser,
+  tiktokOfflineUser,
   LoginTunnel,
   patchCookie,
   getTunnelList,
@@ -97,6 +111,7 @@ const initialTableItem: TableItem = {
   status_cn: "",
   tunnel_type: "",
   remain_valid_days: "",
+  tunnel_perms: [""],
 };
 
 const steps = [
@@ -105,8 +120,9 @@ const steps = [
     description: "点击登录按钮后扫描登录，等待几秒将自动关闭窗口并获取用户名",
   },
   {
-    title: "手机打开直播",
-    description: "手机打开并开始直播，可提前设置上线商品，或者后续在小店设置",
+    title: "打开直播",
+    description:
+      "点击获取推流码，如果是手机和电脑方式需要提前开播，设置上线商品或后续在小店设置",
   },
   { title: "获取推流码", description: "选择对应的区域并点击获取推流码" },
   {
@@ -119,7 +135,11 @@ const steps = [
   },
 ];
 
-const TableComponent: React.FC = () => {
+interface ContainerProps {
+  onCheck: (url: string) => void;
+}
+
+const TableComponent: React.FC<ContainerProps> = ({ onCheck }) => {
   const { activeStep } = useSteps({
     index: 0,
     count: steps.length,
@@ -142,6 +162,7 @@ const TableComponent: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [location, setLocation] = useState("us");
   const [tunnelList, setTunnelList] = useState<TableItem[]>([]);
+  const [rType, setRType] = useState("phone");
 
   const { toast } = useToast();
 
@@ -166,6 +187,21 @@ const TableComponent: React.FC = () => {
     }
   };
 
+  const handleTitleClick = (title: string) => {
+    if (title.includes("设置OBS并开播")) {
+      // window.open(
+      //   "http://help.etsow.com/tiktokzhibohouOBStishiwufalianjiefuwuqiruhejiejue%EF%BC%9F.html"
+      // );
+      onCheck(
+        "http://help.etsow.com/tiktokzhibohouOBStishiwufalianjiefuwuqiruhejiejue%EF%BC%9F.html"
+      );
+    } else if (title.includes("断网")) {
+      onCheck("http://help.etsow.com/OBStishiyizhizhonglian.html");
+      // window.open("http://help.etsow.com/OBStishiyizhizhonglian.html");
+    }
+    console.log(title);
+  };
+
   const handleOpenLoginWindow = () => {
     window.ipcRenderer.send("open-tiktok-window");
   };
@@ -178,6 +214,30 @@ const TableComponent: React.FC = () => {
         location: location,
       });
       await getStreamCode(selectedItemRef.current.item.id);
+      setOpen(false);
+      fetchList(currentPage, perPage);
+      // 处理获取推流码的结果
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "获取推流码结果",
+        description: JSON.stringify(error),
+      });
+      if (JSON.stringify(error).includes("重新登录")) {
+        window.ipcRenderer.send("open-tiktok-window");
+      }
+    } finally {
+      setFetchLoading(false);
+    }
+  };
+  const handleGetStreamCodeVirtual = async () => {
+    try {
+      console.log(selectedItem, selectedItemRef.current);
+      setFetchLoading(true);
+      await LoginTunnel(selectedItemRef.current.item.id, {
+        location: location,
+      });
+      await getStreamCodeVirtual(selectedItemRef.current.item.id);
       setOpen(false);
       fetchList(currentPage, perPage);
       // 处理获取推流码的结果
@@ -209,6 +269,22 @@ const TableComponent: React.FC = () => {
       if (JSON.stringify(error).includes("重新登录")) {
         window.ipcRenderer.send("open-tiktok-window");
       }
+    } finally {
+      setFetchLoading(false);
+    }
+  };
+
+  const handleConfirmAutoOffline = async () => {
+    try {
+      setFetchLoading(true);
+      await tiktokOfflineUser(selectedItemRef.current.item.id);
+      fetchList(currentPage, perPage);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "自动释放通道出错",
+        description: JSON.stringify(error),
+      });
     } finally {
       setFetchLoading(false);
     }
@@ -260,9 +336,15 @@ const TableComponent: React.FC = () => {
     if (selectedItem.action === "login") {
       handleOpenLoginWindow();
     } else if (selectedItem.action === "getStreamUrl") {
-      handleGetStreamCode();
-    } else if (selectedItem.action === "offline") {
+      if (rType === "virtual") {
+        handleGetStreamCodeVirtual();
+      } else {
+        handleGetStreamCode();
+      }
+    } else if (selectedItem.action === "handle-offline") {
       handleConfirmOffline();
+    } else if (selectedItem.action === "auto-offline") {
+      handleConfirmAutoOffline();
     } else if (selectedItem.action === "openShop") {
       handleOpenShop();
     }
@@ -349,6 +431,7 @@ const TableComponent: React.FC = () => {
                       ""
                     ) : (
                       <Button
+                        variant="outline"
                         onClick={() =>
                           setSelectedItem({
                             action: "login",
@@ -367,13 +450,13 @@ const TableComponent: React.FC = () => {
                     <Dialog
                       open={open}
                       onOpenChange={(open) => {
+                        setRType("phone");
                         setOpen(open);
                       }}
                     >
                       <DialogTrigger asChild>
                         {item.nickname && !item.rtmp_push_url ? (
                           <Button
-                            variant="outline"
                             onClick={() => {
                               setCurrentItem(item);
                             }}
@@ -384,15 +467,106 @@ const TableComponent: React.FC = () => {
                           ""
                         )}
                       </DialogTrigger>
-                      <DialogContent className="sm:max-w-[460px]">
+                      <DialogContent className="sm:max-w-[600px]">
                         <DialogHeader>
                           <DialogTitle>获取推流码</DialogTitle>
                           <DialogDescription className="mt-4">
                             请选择您账号的所在地区
                           </DialogDescription>
                         </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                          <div className="grid grid-cols-4 items-center gap-4">
+                        <div className="grid gap-4 py-4 ml-6">
+                          <div className="flex items-center gap-4 mb-4">
+                            <Label htmlFor="remove-duplicates">
+                              获取方式：
+                            </Label>
+                            <RadioGroup
+                              id="remove-duplicates"
+                              value={rType}
+                              defaultValue="phone"
+                            >
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem
+                                  value="phone"
+                                  id="phone"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setRType("phone");
+                                  }}
+                                />
+                                <Label className="flex items-center">
+                                  手机获取
+                                  <TooltipProvider>
+                                    <Tooltip delayDuration={100}>
+                                      <TooltipTrigger asChild>
+                                        <CircleHelp className="w-4 ml-1 mr-2"></CircleHelp>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>
+                                          获取手机开播的推流码（先开播再获取）
+                                        </p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                </Label>
+
+                                <RadioGroupItem
+                                  value="computer"
+                                  id="computer"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setRType("computer");
+                                  }}
+                                />
+                                <Label className="flex items-center">
+                                  电脑获取
+                                  <TooltipProvider>
+                                    <Tooltip delayDuration={100}>
+                                      <TooltipTrigger asChild>
+                                        <CircleHelp className="w-4 ml-1 mr-2"></CircleHelp>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>
+                                          获取电脑开播的推流码（先开播再获取）
+                                        </p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                </Label>
+                                <RadioGroupItem
+                                  disabled={
+                                    !currentItem?.tunnel_perms?.includes(
+                                      "virtual_brodcast"
+                                    )
+                                  }
+                                  value="virtual"
+                                  id="virtual"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setRType("virtual");
+                                  }}
+                                />
+                                <Label className="flex items-center">
+                                  无设备获取
+                                  <TooltipProvider>
+                                    <Tooltip delayDuration={100}>
+                                      <TooltipTrigger asChild>
+                                        <CircleHelp className="w-4 ml-1 mr-2"></CircleHelp>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>
+                                          由探行模拟设备并获取推流码（无需要手动开播）
+                                        </p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                </Label>
+                              </div>
+                            </RadioGroup>
+                          </div>
+                          <div className="ml-6 flex items-center gap-4">
                             <Label htmlFor="device_id" className="text-right">
                               地区：
                             </Label>
@@ -402,7 +576,7 @@ const TableComponent: React.FC = () => {
                                 setLocation(value);
                               }}
                             >
-                              <SelectTrigger className="w-[180px]">
+                              <SelectTrigger className="w-[280px]">
                                 <SelectValue placeholder="选择地区" />
                               </SelectTrigger>
                               <SelectContent>
@@ -418,7 +592,7 @@ const TableComponent: React.FC = () => {
                         </div>
                         <DialogFooter>
                           <Button
-                            type="submit"
+                            type="button"
                             disabled={fetchLoading}
                             onClick={(e) => {
                               setSelectedItem({
@@ -436,44 +610,111 @@ const TableComponent: React.FC = () => {
                       </DialogContent>
                     </Dialog>
 
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        {item.rtmp_push_url && (
-                          <Button
-                            disabled={fetchLoading}
-                            onClick={() => {
-                              setCurrentItem(item);
-                            }}
-                          >
+                    {item.rtmp_push_url && (
+                      // <Button
+                      //   disabled={fetchLoading}
+                      //   onClick={() => {
+                      //     setCurrentItem(item);
+                      //   }}
+                      // >
+                      //   {fetchLoading && (
+                      //     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      //   )}
+                      //   释放通道
+                      // </Button>
+                      <Popover>
+                        <PopoverTrigger>
+                          <Button disabled={fetchLoading}>
                             {fetchLoading && (
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             )}
                             释放通道
                           </Button>
-                        )}
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>确认释放通道</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            确定要释放通道{item.nickname}吗?
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>取消</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() =>
-                              setSelectedItem({
-                                action: "offline",
-                                item: currentItem,
-                              })
-                            }
-                          >
-                            确认
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-40">
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className=" hover:bg-gray-300"
+                                disabled={fetchLoading}
+                                onClick={() => {
+                                  setCurrentItem(item);
+                                }}
+                              >
+                                手动下播并释放
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  手动释放通道
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  确定要释放通道{item.nickname}
+                                  吗?（请确保已手动进行下播）
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>取消</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={(e) => {
+                                    setSelectedItem({
+                                      action: "handle-offline",
+                                      item: currentItem,
+                                    });
+                                  }}
+                                >
+                                  确认
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                className="mt-4 hover:bg-gray-300"
+                                variant="outline"
+                                disabled={
+                                  !currentItem?.tunnel_perms?.includes(
+                                    "finish_brodcast"
+                                  )
+                                }
+                                onClick={() => {
+                                  setCurrentItem(item);
+                                }}
+                              >
+                                自动下播并释放
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  自动释放通道
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  确定要自动下播并释放通道{item.nickname}吗?
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>取消</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={(e) => {
+                                    setSelectedItem({
+                                      action: "auto-offline",
+                                      item: currentItem,
+                                    });
+                                  }}
+                                >
+                                  确认
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </PopoverContent>
+                      </Popover>
+                    )}
 
                     {item.all_cookies && (
                       <Button
@@ -559,7 +800,23 @@ const TableComponent: React.FC = () => {
               </StepIndicator>
 
               <Box flexShrink="0">
-                <StepTitle>{step.title}</StepTitle>
+                <StepTitle
+                  className={
+                    step.title.includes("OBS") || step.title.includes("断网")
+                      ? "cursor-pointer flex"
+                      : "flex"
+                  }
+                  onClick={() => {
+                    handleTitleClick(step.title);
+                  }}
+                >
+                  {step.title}{" "}
+                  {step.title.includes("OBS") || step.title.includes("断网") ? (
+                    <CircleHelp className="w-4 ml-1 mr-2"></CircleHelp>
+                  ) : (
+                    ""
+                  )}
+                </StepTitle>
                 <StepDescription className="w-[180px]">
                   {step.description}
                 </StepDescription>

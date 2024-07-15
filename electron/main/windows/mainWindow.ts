@@ -1,6 +1,7 @@
 import { BrowserWindow, Menu, MenuItem, shell } from "electron";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { update } from "../update";
 
 const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL;
 
@@ -20,7 +21,7 @@ export function createMainWindow(): BrowserWindow {
     height: 800,
     resizable: false,
     autoHideMenuBar: true,
-    title: "探行跨境助手 - V2.0.1",
+    title: "探行跨境助手 - V2.0.5",
     icon: path.join(process.env.VITE_PUBLIC, "favicon.ico"),
     webPreferences: {
       preload,
@@ -60,6 +61,10 @@ export function createMainWindow(): BrowserWindow {
     if (url.startsWith("https:")) shell.openExternal(url);
     return { action: "deny" };
   });
+
+  console.log("eee");
+  // Auto update
+  update(win);
 
   return win;
 }

@@ -84,6 +84,18 @@ export default function UpdateLog() {
                 <p>1、修改部分样式</p>
                 <p>2、添加OBS下载</p>
               </div>
+              <p className="mt-4">版本号 2.0.2 : </p>
+              <div className="ml-4">
+                <p>1、采集功能上线</p>
+              </div>
+              <p className="mt-4">版本号 2.0.3 : </p>
+              <div className="ml-4">
+                <p>1、添加无设备获取tiktok推流码</p>
+              </div>
+              <p className="mt-4">版本号 2.0.5 : </p>
+              <div className="ml-4">
+                <p>1、添加自动检查更新</p>
+              </div>
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import LoginRegister from "@/components/Login";
 import Container from "@/components/Container";
 import { Toaster } from "@/components/ui/toaster";
+import UpdateElectron from "@/components/update";
 
 const LoginPage: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -43,6 +44,8 @@ const LoginPage: React.FC = () => {
       ) : (
         <Container onLoginOut={handleLogout} userName={userName}></Container>
       )}
+
+      <UpdateElectron />
     </div>
   );
 };
