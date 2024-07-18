@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>TikTok Login</title>
+  </head>
+  <body>
+    <h1>抖音登录</h1>
+    <webview
+      id="tiktokWebview"
+      src="https://www.douyin.com"
+      style="width: 100%; height: 600px"
+    ></webview>
+    <button id="getCookiesBtn">Get Cookies</button>
+
+    <script>
+      const webview = document.getElementById("tiktokWebview");
+
+      webview.addEventListener("dom-ready", () => {
+        document
+          .getElementById("getCookiesBtn")
+          .addEventListener("click", () => {
+            webview.contentWindow.eval(`
+      const cookies = document.cookie;
+      console.log(cookies);
+      window.ipcRenderer.send('cookies', cookies);
+    `);
+          });
+      });
+    </script>
+  </body>
+</html>
